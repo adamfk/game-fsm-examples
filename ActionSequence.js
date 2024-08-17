@@ -1,6 +1,7 @@
 'use strict';
-class ActionSequence {
+class ActionSequence extends ActionHandler {
     constructor() {
+        super();
 
         /** @type {ActionHandler[]} */
         this.sequence = [];
@@ -45,19 +46,19 @@ class ActionSequence {
         this.add(action);
     }
 
-    reset() {
+    enter() {
         this.index = 0;
         if (!this.isDone()) {
             this.sequence[this.index].enter();
         }
     }
 
-    update() {
+    do() {
         if (this.isDone())
             return;
 
         const current = this.sequence[this.index];
-        current.update();
+        current.do();
         if (current.isDone()) {
             current.exit();
             this.index++

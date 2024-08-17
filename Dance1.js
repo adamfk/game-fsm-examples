@@ -1,19 +1,17 @@
 "use strict";
 
-class Dance1 {
+class Dance1 extends ActionSequence {
 
     /**
      * @param {EnemyBlob} enemyBlob
      */
     constructor(enemyBlob) {
+        super();
         this.gameObject = enemyBlob;
         this.blob = enemyBlob;
 
         const degrees = -25;
 
-        this.sequence = new ActionSequence();
-        // this.sequence.addSimpleAction(() => { enemyBlob.tile("awake") });
-
         this.addAngleAction(degrees);
         this.addAngleAction(0);
         this.addAngleAction(degrees);
@@ -21,13 +19,9 @@ class Dance1 {
         this.addHopAction();
         this.addHopAction();
         this.addHopAction();
-        this.sequence.addDelayAction(0.5);
-        this.sequence.addSimpleAction(() => { enemyBlob.mirror = !enemyBlob.mirror; });
-        this.sequence.addDelayAction(0.5);
-    }
-
-    enter() {
-        this.sequence.reset();
+        this.addDelayAction(0.5);
+        this.addSimpleAction(() => { enemyBlob.mirror = !enemyBlob.mirror; });
+        this.addDelayAction(0.5);
     }
 
     do() {
@@ -35,20 +29,18 @@ class Dance1 {
         //     return;
         // }
 
-        if (this.sequence.isDone()) {
-            this.sequence.reset();
+        if (this.isDone()) {
+            this.enter();
         }
-        this.sequence.update();
+        super.do();
     }
 
     exit() {
+        super.exit();
+
         this.gameObject.velocity = vec2();
         this.gameObject.angle = 0;
         // this.gameObject.mirror = false; // leave as is
-    }
-
-    isDone() {
-        return this.sequence.isDone();
     }
 
     /**
@@ -66,14 +58,14 @@ class Dance1 {
             desiredAngle = mirroredSign * originalDesiredAngle;
             incPerFrame = (desiredAngle - this.gameObject.angle) / frameCount;
         };
-        action.update = () => {
+        action.do = () => {
             this.gameObject.angle += incPerFrame;
         };
         action.isDone = () => {
             const absDiff = Math.abs(this.gameObject.angle - desiredAngle);
             return absDiff <= Math.abs(incPerFrame);
         };
-        this.sequence.add(action);
+        this.add(action);
     }
 
 
@@ -83,26 +75,25 @@ class Dance1 {
             this.gameObject.velocity.y = 0.1;
             sound_jump.play(this.gameObject.pos, .4, 2);
         };
-        action.update = () => {
+        action.do = () => {
         };
         action.isDone = () => {
             return this.gameObject.groundObject;
         };
-        this.sequence.add(action);
+        this.add(action);
     }
 
 
 }
 
-class Waking1 {
+class Waking1 extends ActionSequence {
     /**
  * @param {EnemyBlob} enemyBlob
  */
     constructor(enemyBlob) {
+        super();
         this.gameObject = enemyBlob;
         this.blob = enemyBlob;
-
-        this.sequence = new ActionSequence();
 
         this.addTileAction("groggy", 0.5);
         this.addTileAction("sleeping", 2);
@@ -118,47 +109,28 @@ class Waking1 {
      * @param {number} duration
      */
     addTileAction(tileName, duration) {
-        this.sequence.addSimpleAction(() => { this.gameObject.tile(tileName) });
-        this.sequence.addDelayAction(duration);
-    }
-
-    enter() {
-        this.sequence.reset();
-    }
-
-    do() {
-        // if (!this.gameObject.inDebugArea()) {
-        //     return;
-        // }
-        this.sequence.update();
-    }
-
-    exit() {
-    }
-
-    isDone() {
-        return this.sequence.isDone();
+        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addDelayAction(duration);
     }
 }
 
-class Lulling1 {
+class Lulling1 extends ActionSequence {
     /**
  * @param {EnemyBlob} enemyBlob
  */
     constructor(enemyBlob) {
+        super();
         this.gameObject = enemyBlob;
         this.blob = enemyBlob;
 
-        this.sequence = new ActionSequence();
-
-        // this.sequence.addSimpleAction(() => { enemyBlob.swellSpeed = 4 });
+        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 4 });
         this.addTileAction("groggy", 2);
 
-        // this.sequence.addSimpleAction(() => { enemyBlob.swellSpeed = 3 });
+        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 3 });
         this.addTileAction("sleeping", 0.5);
         this.addTileAction("groggy", 0.5);
 
-        // this.sequence.addSimpleAction(() => { enemyBlob.swellSpeed = 2 });
+        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 2 });
         this.addTileAction("sleeping", 1);
         this.addTileAction("groggy", 0.2);
     }
@@ -168,25 +140,7 @@ class Lulling1 {
      * @param {number} duration
      */
     addTileAction(tileName, duration) {
-        this.sequence.addSimpleAction(() => { this.gameObject.tile(tileName) });
-        this.sequence.addDelayAction(duration);
-    }
-
-    enter() {
-        this.sequence.reset();
-    }
-
-    do() {
-        // if (!this.gameObject.inDebugArea()) {
-        //     return;
-        // }
-        this.sequence.update();
-    }
-
-    exit() {
-    }
-
-    isDone() {
-        return this.sequence.isDone();
+        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addDelayAction(duration);
     }
 }
