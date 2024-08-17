@@ -7,11 +7,12 @@ class Enemy3Sm
     static EventId = 
     {
         DO : 0, // The `do` event is special. State event handlers do not consume this event (ancestors all get it too) unless a transition occurs.
-        DAMAGED : 1,
+        ALARM : 1,
+        DAMAGED : 2,
     }
     static { Object.freeze(this.EventId); }
     
-    static EventIdCount = 2;
+    static EventIdCount = 3;
     static { Object.freeze(this.EventIdCount); }
     
     static StateId = 
@@ -28,11 +29,12 @@ class Enemy3Sm
         FALLING_A_SLEEP : 9,
         WAKING : 10,
         SLEEPING : 11,
-        SURPRISED : 12,
+        SOUND_ALARM : 12,
+        SURPRISED : 13,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 13;
+    static StateIdCount = 14;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -514,6 +516,7 @@ rand() < 0.02)
     {
         // setup trigger/event handlers
         this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#IDLE_alarm;
         
         // IDLE behavior
         // uml: enter / { e.swellSpeed = 1; }
@@ -527,6 +530,28 @@ rand() < 0.02)
     {
         // adjust function pointers for this state's exit
         this.#currentStateExitHandler = this.#ROOT_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = null;  // no ancestor listens to this event
+    }
+    
+    #IDLE_alarm()
+    {
+        // No ancestor state handles `alarm` event.
+        
+        // IDLE behavior
+        // uml: ALARM TransitionTo(HUNTING)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#ROOT_exit);
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `HUNTING`.
+            this.#HUNTING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#HUNTING_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE
     }
     
     #IDLE_InitialState_transition()
@@ -575,6 +600,42 @@ rand() < 0.02)
                 return;
             } // end of behavior for CHECK_VISION.<ChoicePoint>()
         } // end of behavior for IDLE.<InitialState>
+    }
+    
+    #IDLE_ChoicePoint__transition()
+    {
+        // IDLE.<ChoicePoint>() behavior
+        // uml: [rand() < 0.75] TransitionTo(SOUND_ALARM)
+        if (rand() < 0.75)
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `SOUND_ALARM`.
+            this.#SOUND_ALARM_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            this.stateId = Enemy3Sm.StateId.SOUND_ALARM;
+            this.#ancestorEventHandler = null;
+            return;
+        } // end of behavior for IDLE.<ChoicePoint>()
+        
+        // IDLE.<ChoicePoint>() behavior
+        // uml: else / { e.jumpTowardsPlayer() } TransitionTo(IDLE.<ExitPoint>(hunt))
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: `e.jumpTowardsPlayer()`.
+            this.vars.e.jumpTowardsPlayer()
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE.<ChoicePoint>()
     }
     
     #IDLE_ExitPoint_hunt__transition()
@@ -999,6 +1060,87 @@ this.vars.e.playerDist() < 3)
     
     
     ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state SOUND_ALARM
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #SOUND_ALARM_enter()
+    {
+        // setup trigger/event handlers
+        this.#currentStateExitHandler = this.#SOUND_ALARM_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#SOUND_ALARM_alarm;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SOUND_ALARM_do;
+        
+        // SOUND_ALARM behavior
+        // uml: enter / { e.alarm.enter(); }
+        {
+            // Step 1: execute action `e.alarm.enter();`
+            this.vars.e.alarm.enter();
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    #SOUND_ALARM_exit()
+    {
+        // SOUND_ALARM behavior
+        // uml: exit / { e.alarm.exit(); }
+        {
+            // Step 1: execute action `e.alarm.exit();`
+            this.vars.e.alarm.exit();
+        } // end of behavior for SOUND_ALARM
+        
+        // adjust function pointers for this state's exit
+        this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#IDLE_alarm;  // the next ancestor that handles this event is IDLE
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = null;  // no ancestor listens to this event
+    }
+    
+    #SOUND_ALARM_alarm()
+    {
+        // Setup handler for next ancestor that listens to `alarm` event.
+        this.#ancestorEventHandler = this.#IDLE_alarm;
+        
+        // SOUND_ALARM behavior
+        // uml: ALARM
+        {
+            // Step 1: execute action ``
+            // Step 2: determine if ancestor gets to handle event next.
+            this.#ancestorEventHandler = null;  // consume event
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    #SOUND_ALARM_do()
+    {
+        // No ancestor state handles `do` event.
+        
+        // SOUND_ALARM behavior
+        // uml: do / { e.alarm.do(); }
+        {
+            // Step 1: execute action `e.alarm.do();`
+            this.vars.e.alarm.do();
+            
+            // Step 2: determine if ancestor gets to handle event next.
+            // Don't consume special `do` event.
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: do [e.alarm.isDone()] TransitionTo(IDLE.<ExitPoint>(hunt))
+        if (this.vars.e.alarm.isDone())
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#SOUND_ALARM_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
     // event handlers for state SURPRISED
     ////////////////////////////////////////////////////////////////////////////////
     
@@ -1037,19 +1179,18 @@ this.vars.e.playerDist() < 3)
         // No ancestor state handles `damaged` event.
         
         // SURPRISED behavior
-        // uml: DAMAGED / { e.jumpTowardsPlayer() } TransitionTo(IDLE.<ExitPoint>(hunt))
+        // uml: DAMAGED TransitionTo(IDLE.<ChoicePoint>())
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#SURPRISED_exit();
             
-            // Step 2: Transition action: `e.jumpTowardsPlayer()`.
-            this.vars.e.jumpTowardsPlayer()
+            // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
-            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `IDLE.<ChoicePoint>()`.
+            // IDLE.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#IDLE_ExitPoint_hunt__transition();
+            this.#IDLE_ChoicePoint__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for SURPRISED
     }
@@ -1069,7 +1210,7 @@ this.vars.e.playerDist() < 3)
         } // end of behavior for SURPRISED
         
         // SURPRISED behavior
-        // uml: do [e.surprised.isDone()] TransitionTo(IDLE.<ExitPoint>(hunt))
+        // uml: do [e.surprised.isDone()] TransitionTo(IDLE.<ChoicePoint>())
         if (this.vars.e.surprised.isDone())
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
@@ -1077,11 +1218,11 @@ this.vars.e.playerDist() < 3)
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
-            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `IDLE.<ChoicePoint>()`.
+            // IDLE.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#IDLE_ExitPoint_hunt__transition();
+            this.#IDLE_ChoicePoint__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for SURPRISED
     }
@@ -1103,6 +1244,7 @@ this.vars.e.playerDist() < 3)
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
+            case Enemy3Sm.StateId.SOUND_ALARM: return "SOUND_ALARM";
             case Enemy3Sm.StateId.SURPRISED: return "SURPRISED";
             default: return "?";
         }
@@ -1113,6 +1255,7 @@ this.vars.e.playerDist() < 3)
     {
         switch (id)
         {
+            case Enemy3Sm.EventId.ALARM: return "ALARM";
             case Enemy3Sm.EventId.DAMAGED: return "DAMAGED";
             case Enemy3Sm.EventId.DO: return "DO";
             default: return "?";

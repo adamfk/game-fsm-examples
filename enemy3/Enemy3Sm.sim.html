@@ -326,6 +326,20 @@ state IDLE {
 
         SURPRISED : exit / #123; e.surprised.exit()#59; #125;
 
+        state IDLE.(ChoicePoint)() <<choice>>
+
+        SOUND_ALARM
+
+        SOUND_ALARM : SOUND_ALARM
+
+        SOUND_ALARM : enter / #123; e.alarm.enter()#59; #125;
+
+        SOUND_ALARM : do / #123; e.alarm.do()#59; #125;
+
+        SOUND_ALARM : exit / #123; e.alarm.exit()#59; #125;
+
+        SOUND_ALARM : ALARM / #123;  #125;
+
         state "$exit_pt.hunt" as IDLE.(ExitPoint)(hunt)
 
 }
@@ -345,6 +359,8 @@ CHARGE --> CHARGE_REST : do [e.isChargeDone()]
 CHARGE_REST --> BASIC : do [e.chargeTimer.elapsed()]
 
 ENEMY_WIN --> HUNTING : do [timer.elapsed()]
+
+IDLE --> HUNTING : ALARM
 
 CHECK_VISION --> SURPRISED : DAMAGED
 
@@ -370,9 +386,15 @@ SLEEPING --> SURPRISED : DAMAGED
 
 IDLE.(InitialState) --> CHECK_VISION.(ChoicePoint)()
 
-SURPRISED --> IDLE.(ExitPoint)(hunt) : do [e.surprised.isDone()]
+SURPRISED --> IDLE.(ChoicePoint)() : do [e.surprised.isDone()]
 
-SURPRISED --> IDLE.(ExitPoint)(hunt) : DAMAGED / #123; e.jumpTowardsPlayer() #125;
+SURPRISED --> IDLE.(ChoicePoint)() : DAMAGED
+
+IDLE.(ChoicePoint)() --> SOUND_ALARM : [rand() < 0.75]
+
+IDLE.(ChoicePoint)() --> IDLE.(ExitPoint)(hunt) : else / #123; e.jumpTowardsPlayer() #125;
+
+SOUND_ALARM --> IDLE.(ExitPoint)(hunt) : do [e.alarm.isDone()]
 
 IDLE.(ExitPoint)(hunt) --> HUNTING
 
@@ -422,11 +444,12 @@ evaluateGuard = null;
     static EventId = 
     {
         DO : 0, // The `do` event is special. State event handlers do not consume this event (ancestors all get it too) unless a transition occurs.
-        DAMAGED : 1,
+        ALARM : 1,
+        DAMAGED : 2,
     }
     static { Object.freeze(this.EventId); }
     
-    static EventIdCount = 2;
+    static EventIdCount = 3;
     static { Object.freeze(this.EventIdCount); }
     
     static StateId = 
@@ -443,11 +466,12 @@ evaluateGuard = null;
         FALLING_A_SLEEP : 9,
         WAKING : 10,
         SLEEPING : 11,
-        SURPRISED : 12,
+        SOUND_ALARM : 12,
+        SURPRISED : 13,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 13;
+    static StateIdCount = 14;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -477,12 +501,12 @@ evaluateGuard = null;
             // ROOT.<InitialState> is a pseudo state and cannot have an `enter` trigger.
             
             // ROOT.<InitialState> behavior
-            // uml: / { this.tracer?.edgeTransition("edge22"); } TransitionTo(IDLE)
+            // uml: / { this.tracer?.edgeTransition("edge26"); } TransitionTo(IDLE)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge22");`.
-                this.tracer?.edgeTransition("edge22");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge26");`.
+                this.tracer?.edgeTransition("edge26");
                 
                 // Step 3: Enter/move towards transition target `IDLE`.
                 this.#IDLE_enter();
@@ -992,6 +1016,7 @@ evaluateGuard = null;
     {
         // setup trigger/event handlers
         this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#IDLE_alarm;
         
         // IDLE behavior
         // uml: enter / { this.tracer?.enterState('IDLE'); }
@@ -1019,30 +1044,53 @@ evaluateGuard = null;
         
         // adjust function pointers for this state's exit
         this.#currentStateExitHandler = this.#ROOT_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = null;  // no ancestor listens to this event
+    }
+    
+    #IDLE_alarm()
+    {
+        // No ancestor state handles `alarm` event.
+        
+        // IDLE behavior
+        // uml: ALARM / { this.tracer?.edgeTransition("edge7"); } TransitionTo(HUNTING)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#ROOT_exit);
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge7");`.
+            this.tracer?.edgeTransition("edge7");
+            
+            // Step 3: Enter/move towards transition target `HUNTING`.
+            this.#HUNTING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#HUNTING_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE
     }
     
     #IDLE_InitialState_transition()
     {
         // IDLE.<InitialState> behavior
-        // uml: / { this.tracer?.edgeTransition("edge18"); } TransitionTo(CHECK_VISION.<ChoicePoint>())
+        // uml: / { this.tracer?.edgeTransition("edge19"); } TransitionTo(CHECK_VISION.<ChoicePoint>())
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge18");`.
-            this.tracer?.edgeTransition("edge18");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge19");`.
+            this.tracer?.edgeTransition("edge19");
             
             // Step 3: Enter/move towards transition target `CHECK_VISION.<ChoicePoint>()`.
             this.#CHECK_VISION_enter();
             // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "rand() > 0.5") || this.evaluateGuard("rand() > 0.5")] / { this.tracer?.edgeTransition("edge15"); } TransitionTo(FALLING_A_SLEEP)
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "rand() > 0.5") || this.evaluateGuard("rand() > 0.5")] / { this.tracer?.edgeTransition("edge16"); } TransitionTo(FALLING_A_SLEEP)
             if (this.tracer?.log("🛡️ User evaluating guard: " + "rand() > 0.5") || this.evaluateGuard("rand() > 0.5"))
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge15");`.
-                this.tracer?.edgeTransition("edge15");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge16");`.
+                this.tracer?.edgeTransition("edge16");
                 
                 // Step 3: Enter/move towards transition target `FALLING_A_SLEEP`.
                 this.#FALLING_A_SLEEP_enter();
@@ -1054,12 +1102,12 @@ evaluateGuard = null;
             } // end of behavior for CHECK_VISION.<ChoicePoint>()
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: else / { this.tracer?.edgeTransition("edge14"); } TransitionTo(DANCE)
+            // uml: else / { this.tracer?.edgeTransition("edge15"); } TransitionTo(DANCE)
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge14");`.
-                this.tracer?.edgeTransition("edge14");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge15");`.
+                this.tracer?.edgeTransition("edge15");
                 
                 // Step 3: Enter/move towards transition target `DANCE`.
                 this.#DANCE_enter();
@@ -1072,16 +1120,53 @@ evaluateGuard = null;
         } // end of behavior for IDLE.<InitialState>
     }
     
+    #IDLE_ChoicePoint__transition()
+    {
+        // IDLE.<ChoicePoint>() behavior
+        // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "rand() < 0.75") || this.evaluateGuard("rand() < 0.75")] / { this.tracer?.edgeTransition("edge22"); } TransitionTo(SOUND_ALARM)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "rand() < 0.75") || this.evaluateGuard("rand() < 0.75"))
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge22");`.
+            this.tracer?.edgeTransition("edge22");
+            
+            // Step 3: Enter/move towards transition target `SOUND_ALARM`.
+            this.#SOUND_ALARM_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            this.stateId = Enemy3Sm.StateId.SOUND_ALARM;
+            this.#ancestorEventHandler = null;
+            return;
+        } // end of behavior for IDLE.<ChoicePoint>()
+        
+        // IDLE.<ChoicePoint>() behavior
+        // uml: else / { this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge23"); } TransitionTo(IDLE.<ExitPoint>(hunt))
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: `this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge23");`.
+            this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge23");
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE.<ChoicePoint>()
+    }
+    
     #IDLE_ExitPoint_hunt__transition()
     {
         // IDLE.<ExitPoint>(hunt) behavior
-        // uml: / { this.tracer?.edgeTransition("edge21"); } TransitionTo(HUNTING)
+        // uml: / { this.tracer?.edgeTransition("edge25"); } TransitionTo(HUNTING)
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#IDLE_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge21");`.
-            this.tracer?.edgeTransition("edge21");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge25");`.
+            this.tracer?.edgeTransition("edge25");
             
             // Step 3: Enter/move towards transition target `HUNTING`.
             this.#HUNTING_enter();
@@ -1132,13 +1217,13 @@ evaluateGuard = null;
         // No ancestor state handles `damaged` event.
         
         // CHECK_VISION behavior
-        // uml: DAMAGED / { this.tracer?.edgeTransition("edge7"); } TransitionTo(SURPRISED)
+        // uml: DAMAGED / { this.tracer?.edgeTransition("edge8"); } TransitionTo(SURPRISED)
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(this.#IDLE_exit);
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge7");`.
-            this.tracer?.edgeTransition("edge7");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge8");`.
+            this.tracer?.edgeTransition("edge8");
             
             // Step 3: Enter/move towards transition target `SURPRISED`.
             this.#SURPRISED_enter();
@@ -1155,14 +1240,14 @@ evaluateGuard = null;
         // No ancestor state handles `do` event.
         
         // CHECK_VISION behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.canSeePlayer(6)") || this.evaluateGuard("e.canSeePlayer(6)")] / { this.tracer?.edgeTransition("edge8"); } TransitionTo(SURPRISED)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.canSeePlayer(6)") || this.evaluateGuard("e.canSeePlayer(6)")] / { this.tracer?.edgeTransition("edge9"); } TransitionTo(SURPRISED)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.canSeePlayer(6)") || this.evaluateGuard("e.canSeePlayer(6)"))
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(this.#IDLE_exit);
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge8");`.
-            this.tracer?.edgeTransition("edge8");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge9");`.
+            this.tracer?.edgeTransition("edge9");
             
             // Step 3: Enter/move towards transition target `SURPRISED`.
             this.#SURPRISED_enter();
@@ -1227,14 +1312,14 @@ evaluateGuard = null;
         this.#ancestorEventHandler = this.#CHECK_VISION_do;
         
         // DANCE behavior
-        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("timer.elapsed() &&\ne.dance.isDone()")] / { this.tracer?.edgeTransition("edge9"); } TransitionTo(FALLING_A_SLEEP)
+        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("timer.elapsed() &&\ne.dance.isDone()")] / { this.tracer?.edgeTransition("edge10"); } TransitionTo(FALLING_A_SLEEP)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("timer.elapsed() &&\ne.dance.isDone()"))
         {
             // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition).
             this.#DANCE_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge9");`.
-            this.tracer?.edgeTransition("edge9");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge10");`.
+            this.tracer?.edgeTransition("edge10");
             
             // Step 3: Enter/move towards transition target `FALLING_A_SLEEP`.
             this.#FALLING_A_SLEEP_enter();
@@ -1309,14 +1394,14 @@ evaluateGuard = null;
         this.#ancestorEventHandler = this.#CHECK_VISION_do;
         
         // FALLING_A_SLEEP behavior
-        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "e.lulling.isDone()") || this.evaluateGuard("e.lulling.isDone()")] / { this.tracer?.edgeTransition("edge11"); } TransitionTo(SLEEPING)
+        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "e.lulling.isDone()") || this.evaluateGuard("e.lulling.isDone()")] / { this.tracer?.edgeTransition("edge12"); } TransitionTo(SLEEPING)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.lulling.isDone()") || this.evaluateGuard("e.lulling.isDone()"))
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(this.#IDLE_exit);
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge11");`.
-            this.tracer?.edgeTransition("edge11");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge12");`.
+            this.tracer?.edgeTransition("edge12");
             
             // Step 3: Enter/move towards transition target `SLEEPING`.
             this.#SLEEPING_enter();
@@ -1391,26 +1476,26 @@ evaluateGuard = null;
         this.#ancestorEventHandler = this.#CHECK_VISION_do;
         
         // WAKING behavior
-        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "e.waking.isDone()") || this.evaluateGuard("e.waking.isDone()")] / { this.tracer?.edgeTransition("edge10"); } TransitionTo(CHECK_VISION.<ChoicePoint>())
+        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "e.waking.isDone()") || this.evaluateGuard("e.waking.isDone()")] / { this.tracer?.edgeTransition("edge11"); } TransitionTo(CHECK_VISION.<ChoicePoint>())
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.waking.isDone()") || this.evaluateGuard("e.waking.isDone()"))
         {
             // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition).
             this.#WAKING_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge10");`.
-            this.tracer?.edgeTransition("edge10");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge11");`.
+            this.tracer?.edgeTransition("edge11");
             
             // Step 3: Enter/move towards transition target `CHECK_VISION.<ChoicePoint>()`.
             // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("e.playerDist() < 3 ||\nrand() < 0.5")] / { this.tracer?.edgeTransition("edge12"); } TransitionTo(DANCE)
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("e.playerDist() < 3 ||\nrand() < 0.5")] / { this.tracer?.edgeTransition("edge13"); } TransitionTo(DANCE)
             if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("e.playerDist() < 3 ||\nrand() < 0.5"))
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge12");`.
-                this.tracer?.edgeTransition("edge12");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge13");`.
+                this.tracer?.edgeTransition("edge13");
                 
                 // Step 3: Enter/move towards transition target `DANCE`.
                 this.#DANCE_enter();
@@ -1422,12 +1507,12 @@ evaluateGuard = null;
             } // end of behavior for CHECK_VISION.<ChoicePoint>()
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: else / { this.tracer?.edgeTransition("edge13"); } TransitionTo(FALLING_A_SLEEP)
+            // uml: else / { this.tracer?.edgeTransition("edge14"); } TransitionTo(FALLING_A_SLEEP)
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge13");`.
-                this.tracer?.edgeTransition("edge13");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge14");`.
+                this.tracer?.edgeTransition("edge14");
                 
                 // Step 3: Enter/move towards transition target `FALLING_A_SLEEP`.
                 this.#FALLING_A_SLEEP_enter();
@@ -1513,13 +1598,13 @@ evaluateGuard = null;
         // No ancestor state handles `damaged` event.
         
         // SLEEPING behavior
-        // uml: DAMAGED / { this.tracer?.edgeTransition("edge17"); } TransitionTo(SURPRISED)
+        // uml: DAMAGED / { this.tracer?.edgeTransition("edge18"); } TransitionTo(SURPRISED)
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#SLEEPING_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge17");`.
-            this.tracer?.edgeTransition("edge17");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge18");`.
+            this.tracer?.edgeTransition("edge18");
             
             // Step 3: Enter/move towards transition target `SURPRISED`.
             this.#SURPRISED_enter();
@@ -1546,14 +1631,14 @@ evaluateGuard = null;
         } // end of behavior for SLEEPING
         
         // SLEEPING behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 3") || this.evaluateGuard("timer.elapsed() ||\ne.playerDist() < 3")] / { this.tracer?.edgeTransition("edge16"); } TransitionTo(WAKING)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 3") || this.evaluateGuard("timer.elapsed() ||\ne.playerDist() < 3")] / { this.tracer?.edgeTransition("edge17"); } TransitionTo(WAKING)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 3") || this.evaluateGuard("timer.elapsed() ||\ne.playerDist() < 3"))
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#SLEEPING_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge16");`.
-            this.tracer?.edgeTransition("edge16");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge17");`.
+            this.tracer?.edgeTransition("edge17");
             
             // Step 3: Enter/move towards transition target `WAKING`.
             this.#CHECK_VISION_enter();
@@ -1564,6 +1649,102 @@ evaluateGuard = null;
             // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
             return;
         } // end of behavior for SLEEPING
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state SOUND_ALARM
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #SOUND_ALARM_enter()
+    {
+        // setup trigger/event handlers
+        this.#currentStateExitHandler = this.#SOUND_ALARM_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#SOUND_ALARM_alarm;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SOUND_ALARM_do;
+        
+        // SOUND_ALARM behavior
+        // uml: enter / { this.tracer?.enterState('SOUND_ALARM'); }
+        {
+            // Step 1: execute action `this.tracer?.enterState('SOUND_ALARM');`
+            this.tracer?.enterState('SOUND_ALARM');
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.enter();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.enter();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.enter();");
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    #SOUND_ALARM_exit()
+    {
+        // SOUND_ALARM behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.exit();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.exit();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.exit();");
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: exit / { this.tracer?.exitState('SOUND_ALARM'); }
+        {
+            // Step 1: execute action `this.tracer?.exitState('SOUND_ALARM');`
+            this.tracer?.exitState('SOUND_ALARM');
+        } // end of behavior for SOUND_ALARM
+        
+        // adjust function pointers for this state's exit
+        this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.ALARM] = this.#IDLE_alarm;  // the next ancestor that handles this event is IDLE
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = null;  // no ancestor listens to this event
+    }
+    
+    #SOUND_ALARM_alarm()
+    {
+        // Setup handler for next ancestor that listens to `alarm` event.
+        this.#ancestorEventHandler = this.#IDLE_alarm;
+        
+        // SOUND_ALARM behavior
+        // uml: ALARM
+        {
+            // Step 1: execute action ``
+            // Step 2: determine if ancestor gets to handle event next.
+            this.#ancestorEventHandler = null;  // consume event
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    #SOUND_ALARM_do()
+    {
+        // No ancestor state handles `do` event.
+        
+        // SOUND_ALARM behavior
+        // uml: do / { this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.do();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.do();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "e.alarm.do();");
+            
+            // Step 2: determine if ancestor gets to handle event next.
+            // Don't consume special `do` event.
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("e.alarm.isDone()")] / { this.tracer?.edgeTransition("edge24"); } TransitionTo(IDLE.<ExitPoint>(hunt))
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("e.alarm.isDone()"))
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#SOUND_ALARM_exit();
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge24");`.
+            this.tracer?.edgeTransition("edge24");
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for SOUND_ALARM
     }
     
     
@@ -1620,19 +1801,19 @@ evaluateGuard = null;
         // No ancestor state handles `damaged` event.
         
         // SURPRISED behavior
-        // uml: DAMAGED / { this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge20"); } TransitionTo(IDLE.<ExitPoint>(hunt))
+        // uml: DAMAGED / { this.tracer?.edgeTransition("edge21"); } TransitionTo(IDLE.<ChoicePoint>())
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#SURPRISED_exit();
             
-            // Step 2: Transition action: `this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge20");`.
-            this.tracer?.log("⚡ FSM would execute action: " + "e.jumpTowardsPlayer()");this.tracer?.edgeTransition("edge20");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge21");`.
+            this.tracer?.edgeTransition("edge21");
             
-            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
-            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `IDLE.<ChoicePoint>()`.
+            // IDLE.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#IDLE_ExitPoint_hunt__transition();
+            this.#IDLE_ChoicePoint__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for SURPRISED
     }
@@ -1652,20 +1833,20 @@ evaluateGuard = null;
         } // end of behavior for SURPRISED
         
         // SURPRISED behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.surprised.isDone()") || this.evaluateGuard("e.surprised.isDone()")] / { this.tracer?.edgeTransition("edge19"); } TransitionTo(IDLE.<ExitPoint>(hunt))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.surprised.isDone()") || this.evaluateGuard("e.surprised.isDone()")] / { this.tracer?.edgeTransition("edge20"); } TransitionTo(IDLE.<ChoicePoint>())
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.surprised.isDone()") || this.evaluateGuard("e.surprised.isDone()"))
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
             this.#SURPRISED_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge19");`.
-            this.tracer?.edgeTransition("edge19");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge20");`.
+            this.tracer?.edgeTransition("edge20");
             
-            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
-            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `IDLE.<ChoicePoint>()`.
+            // IDLE.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#IDLE_ExitPoint_hunt__transition();
+            this.#IDLE_ChoicePoint__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for SURPRISED
     }
@@ -1687,6 +1868,7 @@ evaluateGuard = null;
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
+            case Enemy3Sm.StateId.SOUND_ALARM: return "SOUND_ALARM";
             case Enemy3Sm.StateId.SURPRISED: return "SURPRISED";
             default: return "?";
         }
@@ -1697,6 +1879,7 @@ evaluateGuard = null;
     {
         switch (id)
         {
+            case Enemy3Sm.EventId.ALARM: return "ALARM";
             case Enemy3Sm.EventId.DAMAGED: return "DAMAGED";
             case Enemy3Sm.EventId.DO: return "DO";
             default: return "?";
@@ -1736,7 +1919,7 @@ evaluateGuard = null;
             center: true
         });
 
-        const diagramEventNamesArray = ['do', 'DAMAGED', ];
+        const diagramEventNamesArray = ['do', 'ALARM', 'DAMAGED', ];
 
         const leftPane = document.querySelector(".main");
         const rightPane = document.querySelector(".sidebar");

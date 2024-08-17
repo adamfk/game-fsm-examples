@@ -1,14 +1,32 @@
 "use strict";
 
-class Dance1 extends ActionSequence {
-
+class EnemyBlobSequence extends ActionSequence {
     /**
      * @param {EnemyBlob} enemyBlob
      */
     constructor(enemyBlob) {
         super();
         this.gameObject = enemyBlob;
-        this.blob = enemyBlob;
+    }
+
+    /**
+     * @param {"groggy" | "sleeping" | "surprised" | "alarm"} tileName
+     * @param {number} duration
+     */
+    addTileAction(tileName, duration) {
+        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addDelayAction(duration);
+    }
+}
+
+
+class Dance1 extends EnemyBlobSequence {
+
+    /**
+     * @param {EnemyBlob} enemyBlob
+     */
+    constructor(enemyBlob) {
+        super(enemyBlob);
 
         const degrees = -25;
 
@@ -86,14 +104,12 @@ class Dance1 extends ActionSequence {
 
 }
 
-class Waking1 extends ActionSequence {
+class Waking1 extends EnemyBlobSequence {
     /**
  * @param {EnemyBlob} enemyBlob
  */
     constructor(enemyBlob) {
-        super();
-        this.gameObject = enemyBlob;
-        this.blob = enemyBlob;
+        super(enemyBlob);
 
         this.addTileAction("groggy", 0.5);
         this.addTileAction("sleeping", 2);
@@ -103,63 +119,38 @@ class Waking1 extends ActionSequence {
 
         this.addTileAction("groggy", 2);
     }
-
-    /**
-     * @param {"groggy" | "sleeping"} tileName
-     * @param {number} duration
-     */
-    addTileAction(tileName, duration) {
-        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
-        this.addDelayAction(duration);
-    }
 }
 
-class Lulling1 extends ActionSequence {
+class Lulling1 extends EnemyBlobSequence {
     /**
      * @param {EnemyBlob} enemyBlob
      */
     constructor(enemyBlob) {
-        super();
-        this.gameObject = enemyBlob;
-        this.blob = enemyBlob;
+        super(enemyBlob);
 
-        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 4 });
         this.addTileAction("groggy", 2);
 
-        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 3 });
         this.addTileAction("sleeping", 0.5);
         this.addTileAction("groggy", 0.5);
 
-        // this.addSimpleAction(() => { enemyBlob.swellSpeed = 2 });
         this.addTileAction("sleeping", 1);
         this.addTileAction("groggy", 0.2);
-    }
-
-    /**
-     * @param {"groggy" | "sleeping"} tileName
-     * @param {number} duration
-     */
-    addTileAction(tileName, duration) {
-        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
-        this.addDelayAction(duration);
     }
 }
 
 
-class Surprised1 extends ActionSequence {
+class Surprised1 extends EnemyBlobSequence {
 
-    static textOptions = ["OH !@%@??!", "!@#$!!@#$!!@#$!", "WHAT THE !@#$!?", "WHOA!", "YIKES!", "OH NO!", "ZUT ALORS!!!", ];
+    static textOptions = ["OH !@%@??!", "!@#$!!@#$!!@#$!", "WHAT THE !@#$!?", "WHOA!", "YIKES!", "OH NO!", "ZUT ALORS!!!",];
 
     /**
      * @param {EnemyBlob} enemyBlob
      */
     constructor(enemyBlob) {
-        super();
-        this.gameObject = enemyBlob;
-        this.blob = enemyBlob;
+        super(enemyBlob);
         this.text = this.getText();
 
-        this.addSimpleAction(() => { 
+        this.addSimpleAction(() => {
             enemyBlob.swellSpeed = 70;
             enemyBlob.smallVerticalHop();
             enemyBlob.tile("surprised");
@@ -178,13 +169,45 @@ class Surprised1 extends ActionSequence {
         super.do();
         this.gameObject.debugTextAboveMe(this.text);
     }
+}
+
+
+class Alarm1 extends EnemyBlobSequence {
+
+    static textOptions = ["ALERT!", "HELP!", "INTRUDER!", "ALARM!", "DANGER!",];
 
     /**
-     * @param {"groggy" | "sleeping" | "surprised"} tileName
-     * @param {number} duration
+     * @param {Enemy3} enemyBlob
      */
-    addTileAction(tileName, duration) {
-        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
-        this.addDelayAction(duration);
+    constructor(enemyBlob) {
+        super(enemyBlob);
+        this.enemyBlob = enemyBlob;
+        this.text = this.getText();
+
+        this.addSimpleAction(() => {
+            enemyBlob.swellSpeed = 10;
+            enemyBlob.tile("alarm");
+        });
+
+        for (let i = 0; i < rand(3,8); i++) {
+            this.addSimpleAction(() => {
+                this.text = this.getText();
+                enemyBlob.alertComrades();
+            }, 1);
+        }
+    }
+
+    getText() {
+        return Surprised1.textOptions[randInt(0, Surprised1.textOptions.length)];
+    }
+
+    do() {
+        if (this.isDone())
+            return;
+
+        super.do();
+        this.gameObject.debugTextAboveMe(this.text);
+        const vectorAway = this.enemyBlob.normalVecToPlayer().scale(-1);
+        this.enemyBlob.walkOrJumpTowardsTarget(vectorAway);
     }
 }

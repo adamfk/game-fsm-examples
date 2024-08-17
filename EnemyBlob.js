@@ -1,7 +1,7 @@
 'use strict';
 
 class EnemyBlob extends Enemy {
-    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6 };
+    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6, alarm: 7 };
 
     static baseTileIndex = 6;
 
@@ -26,7 +26,7 @@ class EnemyBlob extends Enemy {
         this.setCollision(true, false);
 
         /**
-         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised"}
+         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"}
          */
         this.tileName = "sleeping";
     }
@@ -66,10 +66,10 @@ class EnemyBlob extends Enemy {
      */
     update() {
         super.update();
-        
+
         if (!player)
             return;
-        
+
         this.handlePlayerCollision(player);
     }
 
@@ -82,8 +82,7 @@ class EnemyBlob extends Enemy {
         const swellTime = this.swellTimer.get() * this.swellSpeed;
         this.drawSize = vec2(1 - .1 * Math.sin(swellTime), 1 + .1 * Math.sin(swellTime));
 
-        if (abs(this.velocity.x) > 0.01)
-        {
+        if (abs(this.velocity.x) > 0.01) {
             this.mirror = this.velocity.x < 0;
         }
 
@@ -93,8 +92,7 @@ class EnemyBlob extends Enemy {
 
         let tileInfo = this.tileInfo;
 
-        if (this.getTimeSinceDamage() < 0.3)
-        {
+        if (this.getTimeSinceDamage() < 0.3) {
             tileInfo = tile(EnemyBlob.baseTileIndex + this.tileOffsets.hurt);
         }
 
@@ -140,13 +138,13 @@ class EnemyBlob extends Enemy {
     }
 
     /**
-     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised"} tileName
+     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"} tileName
      */
     tile(tileName) {
         this.tileName = tileName;
         this.tileInfo = tile(EnemyBlob.baseTileIndex + this.tileOffsets[tileName]);
     }
-    
+
     /**
      * @param {number} range
      */
@@ -159,25 +157,24 @@ class EnemyBlob extends Enemy {
         return super.testSightToPlayer(range);
     }
 
-    /**
-     * @param {Vector2} vecToPlayer 
-     * @param {number} jumpBoost - additional jump speed for when enemy is stuck/stalled
-     */
-    jumpTowardsPlayer(vecToPlayer, jumpBoost = 0)
-    {
-        if (!vecToPlayer)
-            vecToPlayer = this.normalVecToPlayer();
-
-        const jumpYSpeed = clamp(rand(.4, .2) + jumpBoost, 0, 0.4);
-        const jumpXSpeed = rand(.07, .2);
-        this.velocity = vecToPlayer.multiply(vec2(jumpXSpeed, 0));
-        this.velocity.y = jumpYSpeed;
-        sound_jump.play(this.pos, .4, 2);
-        console.log("jumping towards player");
+    jumpTowardsPlayer(jumpBoost = 0) {
+        this.jumpTowards(this.normalVecToPlayer(), jumpBoost);
     }
 
-    smallVerticalHop()
-    {
+    /**
+     * @param {Vector2} target 
+     * @param {number} jumpBoost - additional jump speed for when enemy is stuck/stalled
+     */
+    jumpTowards(target, jumpBoost = 0) {
+        const jumpYSpeed = clamp(rand(.4, .2) + jumpBoost, 0, 0.4);
+        const jumpXSpeed = rand(.07, .2);
+        this.velocity = target.multiply(vec2(jumpXSpeed, 0));
+        this.velocity.y = jumpYSpeed;
+        sound_jump.play(this.pos, .4, 2);
+        // console.log("jumping towards player");
+    }
+
+    smallVerticalHop() {
         this.velocity.y = .1;
         this.velocity.x = 0;
         sound_jump.play(this.pos, .4, 2);

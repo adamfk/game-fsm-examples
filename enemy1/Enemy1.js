@@ -66,7 +66,7 @@ class Enemy1 extends EnemyBlob
             // on ground. randomly jump towards player
             if (rand() < 0.01 + scaledStallCount)
             {
-                this.jumpTowardsPlayer(vecToPlayer, scaledStallCount);
+                this.jumpTowards(vecToPlayer, scaledStallCount);
             }
             else
             {

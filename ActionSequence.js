@@ -17,8 +17,9 @@ class ActionSequence extends ActionHandler {
 
     /**
      * @param {() => void} func
+     * @param {number} [postDelay]
      */
-    addSimpleAction(func) {
+    addSimpleAction(func, postDelay) {
         const action = new ActionHandler();
         action.enter = () => {
             func();
@@ -27,6 +28,10 @@ class ActionSequence extends ActionHandler {
             return true;
         };
         this.add(action);
+
+        if (postDelay) {
+            this.addDelayAction(postDelay);
+        }
     }
 
     /**

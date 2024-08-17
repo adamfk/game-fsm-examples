@@ -17,6 +17,7 @@ class Enemy3 extends EnemyBlob
         this.waking = new Waking1(this);
         this.lulling = new Lulling1(this);
         this.surprised = new Surprised1(this);
+        this.alarm = new Alarm1(this);
 
         this.chargeTimer = new Timer();
         this.chargeMaxTime = 0.5;
@@ -98,25 +99,44 @@ class Enemy3 extends EnemyBlob
     {
         const vecToPlayer = this.normalVecToPlayer();
 
-        // if in air, drift towards player
-        if (!this.groundObject)
+        // if in air, drift towards target
+        this.walkOrJumpTowardsTarget(vecToPlayer);
+    }
+
+    alarmEvent() {
+        this.sm.dispatchEvent(Enemy3Sm.EventId.ALARM);
+    }
+
+    alertComrades(radius = 30) {
+        engineObjectsCallback(this.pos, radius, (o)=>
         {
-            this.velocity.x += vecToPlayer.x * .001;
+            if (o instanceof Enemy3 && o !== this) {
+                console.log("alerting comrade", this, o);
+                o.alarmEvent();
+            }
+        });
+    }
+
+    /**
+     * @param {Vector2} targetVec
+     */
+    walkOrJumpTowardsTarget(targetVec) {
+        if (!this.groundObject) {
+            this.velocity.x += targetVec.x * .001;
         }
-        else
-        {
+
+        else {
             const scaledStallCount = this.stallFrameCount / 60 / 2 * 0.1;
 
             // this.debugTextAboveMe("stall count " + this.stallFrameCount);
             // on ground. randomly jump towards player
-            if (rand() < 0.01 + scaledStallCount)
-            {
-                this.jumpTowardsPlayer(vecToPlayer, scaledStallCount);
+            if (rand() < 0.01 + scaledStallCount) {
+                this.jumpTowards(targetVec, scaledStallCount);
             }
-            else
-            {
+
+            else {
                 // if not jumping, march towards player
-                this.velocity = vecToPlayer.multiply(vec2(.07, .0));
+                this.velocity = targetVec.multiply(vec2(.07, .0));
             }
         }
     }
