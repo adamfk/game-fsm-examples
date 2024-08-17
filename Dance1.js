@@ -147,6 +147,9 @@ class Lulling1 extends ActionSequence {
 
 
 class Surprised1 extends ActionSequence {
+
+    static textOptions = ["OH !@%@??!", "!@#$!!@#$!!@#$!", "WHAT THE !@#$!?", "WHOA!", "YIKES!", "OH NO!", "ZUT ALORS!!!", ];
+
     /**
      * @param {EnemyBlob} enemyBlob
      */
@@ -154,10 +157,18 @@ class Surprised1 extends ActionSequence {
         super();
         this.gameObject = enemyBlob;
         this.blob = enemyBlob;
+        this.text = this.getText();
 
-        this.addSimpleAction(() => { enemyBlob.swellSpeed = 70; });
-        this.addSimpleAction(() => { enemyBlob.smallVerticalHop(); });
-        this.addTileAction("surprised", 1);
+        this.addSimpleAction(() => { 
+            enemyBlob.swellSpeed = 70;
+            enemyBlob.smallVerticalHop();
+            enemyBlob.tile("surprised");
+        });
+        this.addDelayAction(1);
+    }
+
+    getText() {
+        return Surprised1.textOptions[randInt(0, Surprised1.textOptions.length)];
     }
 
     do() {
@@ -165,7 +176,7 @@ class Surprised1 extends ActionSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe("!!!");
+        this.gameObject.debugTextAboveMe(this.text);
     }
 
     /**
