@@ -13,6 +13,16 @@ setShowSplashScreen(false);
 
 let spriteAtlas, score, deaths;
 
+let stadiumDamage = false;
+
+// we can't use keyWasPressed() because it doesn't work when paused
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'KeyP') {
+        paused = !paused;
+    }
+});
+
+
 ///////////////////////////////////////////////////////////////////////////////
 function gameInit()
 {
@@ -47,13 +57,6 @@ function gameInit()
     
 }
 
-// we can't use keyWasPressed() because it doesn't work when paused
-document.addEventListener('keydown', function(event) {
-    if (event.code === 'KeyP') {
-        paused = !paused;
-    }
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 function gameUpdate()
 {
@@ -76,13 +79,17 @@ function gameUpdate()
     if (keyWasPressed('KeyE'))
         new enemyCtor(mousePos);
 
-    // X = make explosion
-    if (keyWasPressed('KeyX'))
+    // B = make explosion
+    if (keyWasPressed('KeyB'))
         explosion(mousePos);
 
     // M = move player to mouse
     if (keyWasPressed('KeyM'))
         player.pos = mousePos;
+
+    // U = toggle stadium damage
+    if (keyWasPressed('KeyU'))
+        stadiumDamage = !stadiumDamage;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

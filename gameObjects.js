@@ -400,8 +400,11 @@ class Bullet extends EngineObject
     {
         if (data <= 0)
             return 0;
-            
-        destroyTile(pos);
+        
+        if (stadiumDamage) {
+            destroyTile(pos);
+        }
+
         this.kill();
         return 1; 
     }

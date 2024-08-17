@@ -69,11 +69,14 @@ function explosion(pos, radius=3)
     ASSERT(radius > 0);
 
     // destroy level
-    for (let x = -radius; x < radius; ++x)
+    if (stadiumDamage == true)
     {
-        const h = (radius*radius - x*x)**.5;
-        for (let y = -h; y <= h; ++y)
-            destroyTile(pos.add(vec2(x,y)), 0, 0);
+        for (let x = -radius; x < radius; ++x)
+        {
+            const h = (radius*radius - x*x)**.5;
+            for (let y = -h; y <= h; ++y)
+                destroyTile(pos.add(vec2(x,y)), 0, 0);
+        }
     }
 
     // cleanup neighbors
