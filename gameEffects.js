@@ -61,6 +61,9 @@ function makeDebris(pos, color = hsl(), amount = 50, size=.2, elasticity = .3)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @param {Vector2} pos
+ */
 function explosion(pos, radius=3)
 {
     ASSERT(radius > 0);
@@ -83,18 +86,22 @@ function explosion(pos, radius=3)
     }
 
     // kill/push objects
+    
     engineObjectsCallback(pos, radius*3, (o)=> 
     {
-        const damage = radius*2;
-        const d = o.pos.distance(pos);
-        if (o.isGameObject)
+        const maxDamage = radius*2;
+        const distance = o.pos.distance(pos);
+        const reductionMultiplier = o === player ? 1.5 : 1;
+        let damage = clamp(maxDamage - (distance|0) * reductionMultiplier, 0, maxDamage); // afk mod
+        if (o.isGameObject && damage > 0)
         {
             // do damage
-            d < radius && o.damage(damage);
+            o.damage(damage);
+            console.log(maxDamage, distance, damage, o);
         }
 
         // push
-        const p = percent(d, 2*radius, radius);
+        const p = percent(distance, 2*radius, radius);
         const force = o.pos.subtract(pos).normalize(p*radius*.2);
         o.applyForce(force);
         if (o.isDead && o.isDead())
