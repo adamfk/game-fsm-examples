@@ -116,8 +116,8 @@ class Waking1 extends ActionSequence {
 
 class Lulling1 extends ActionSequence {
     /**
- * @param {EnemyBlob} enemyBlob
- */
+     * @param {EnemyBlob} enemyBlob
+     */
     constructor(enemyBlob) {
         super();
         this.gameObject = enemyBlob;
@@ -137,6 +137,39 @@ class Lulling1 extends ActionSequence {
 
     /**
      * @param {"groggy" | "sleeping"} tileName
+     * @param {number} duration
+     */
+    addTileAction(tileName, duration) {
+        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addDelayAction(duration);
+    }
+}
+
+
+class Surprised1 extends ActionSequence {
+    /**
+     * @param {EnemyBlob} enemyBlob
+     */
+    constructor(enemyBlob) {
+        super();
+        this.gameObject = enemyBlob;
+        this.blob = enemyBlob;
+
+        this.addSimpleAction(() => { enemyBlob.swellSpeed = 70; });
+        this.addSimpleAction(() => { enemyBlob.smallVerticalHop(); });
+        this.addTileAction("surprised", 1);
+    }
+
+    do() {
+        if (this.isDone())
+            return;
+
+        super.do();
+        this.gameObject.debugTextAboveMe("!!!");
+    }
+
+    /**
+     * @param {"groggy" | "sleeping" | "surprised"} tileName
      * @param {number} duration
      */
     addTileAction(tileName, duration) {

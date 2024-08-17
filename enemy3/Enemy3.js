@@ -16,6 +16,7 @@ class Enemy3 extends EnemyBlob
         this.dance = new Dance1(this);
         this.waking = new Waking1(this);
         this.lulling = new Lulling1(this);
+        this.surprised = new Surprised1(this);
 
         this.chargeTimer = new Timer();
         this.chargeMaxTime = 0.5;

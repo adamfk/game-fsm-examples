@@ -28,10 +28,11 @@ class Enemy3Sm
         FALLING_A_SLEEP : 9,
         WAKING : 10,
         SLEEPING : 11,
+        SURPRISED : 12,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 12;
+    static StateIdCount = 13;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -513,7 +514,6 @@ rand() < 0.02)
     {
         // setup trigger/event handlers
         this.#currentStateExitHandler = this.#IDLE_exit;
-        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = this.#IDLE_damaged;
         
         // IDLE behavior
         // uml: enter / { e.swellSpeed = 1; }
@@ -527,28 +527,6 @@ rand() < 0.02)
     {
         // adjust function pointers for this state's exit
         this.#currentStateExitHandler = this.#ROOT_exit;
-        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = null;  // no ancestor listens to this event
-    }
-    
-    #IDLE_damaged()
-    {
-        // No ancestor state handles `damaged` event.
-        
-        // IDLE behavior
-        // uml: DAMAGED TransitionTo(HUNTING)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(this.#ROOT_exit);
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `HUNTING`.
-            this.#HUNTING_enter();
-            
-            // Finish transition by calling pseudo state transition function.
-            this.#HUNTING_InitialState_transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-        } // end of behavior for IDLE
     }
     
     #IDLE_InitialState_transition()
@@ -599,6 +577,25 @@ rand() < 0.02)
         } // end of behavior for IDLE.<InitialState>
     }
     
+    #IDLE_ExitPoint_hunt__transition()
+    {
+        // IDLE.<ExitPoint>(hunt) behavior
+        // uml: TransitionTo(HUNTING)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            this.#IDLE_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `HUNTING`.
+            this.#HUNTING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#HUNTING_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE.<ExitPoint>(hunt)
+    }
+    
     
     ////////////////////////////////////////////////////////////////////////////////
     // event handlers for state CHECK_VISION
@@ -608,6 +605,7 @@ rand() < 0.02)
     {
         // setup trigger/event handlers
         this.#currentStateExitHandler = this.#CHECK_VISION_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = this.#CHECK_VISION_damaged;
         this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#CHECK_VISION_do;
     }
     
@@ -615,7 +613,30 @@ rand() < 0.02)
     {
         // adjust function pointers for this state's exit
         this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = null;  // no ancestor listens to this event
         this.#currentEventHandlers[Enemy3Sm.EventId.DO] = null;  // no ancestor listens to this event
+    }
+    
+    #CHECK_VISION_damaged()
+    {
+        // No ancestor state handles `damaged` event.
+        
+        // CHECK_VISION behavior
+        // uml: DAMAGED TransitionTo(SURPRISED)
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#IDLE_exit);
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `SURPRISED`.
+            this.#SURPRISED_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            this.stateId = Enemy3Sm.StateId.SURPRISED;
+            // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
+            return;
+        } // end of behavior for CHECK_VISION
     }
     
     #CHECK_VISION_do()
@@ -623,7 +644,7 @@ rand() < 0.02)
         // No ancestor state handles `do` event.
         
         // CHECK_VISION behavior
-        // uml: do [e.canSeePlayer(6)] TransitionTo(IDLE.<ExitPoint>(hunt))
+        // uml: do [e.canSeePlayer(6)] TransitionTo(SURPRISED)
         if (this.vars.e.canSeePlayer(6))
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
@@ -631,24 +652,13 @@ rand() < 0.02)
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
-            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `SURPRISED`.
+            this.#SURPRISED_enter();
             
-            // IDLE.<ExitPoint>(hunt) behavior
-            // uml: TransitionTo(HUNTING)
-            {
-                // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-                this.#IDLE_exit();
-                
-                // Step 2: Transition action: ``.
-                
-                // Step 3: Enter/move towards transition target `HUNTING`.
-                this.#HUNTING_enter();
-                
-                // Finish transition by calling pseudo state transition function.
-                this.#HUNTING_InitialState_transition();
-                return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-            } // end of behavior for IDLE.<ExitPoint>(hunt)
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            this.stateId = Enemy3Sm.StateId.SURPRISED;
+            // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
+            return;
         } // end of behavior for CHECK_VISION
     }
     
@@ -904,6 +914,7 @@ rand() < 0.5)
     {
         // setup trigger/event handlers
         this.#currentStateExitHandler = this.#SLEEPING_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = this.#SLEEPING_damaged;
         this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SLEEPING_do;
         
         // SLEEPING behavior
@@ -925,7 +936,30 @@ rand() < 0.5)
         
         // adjust function pointers for this state's exit
         this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = null;  // no ancestor listens to this event
         this.#currentEventHandlers[Enemy3Sm.EventId.DO] = null;  // no ancestor listens to this event
+    }
+    
+    #SLEEPING_damaged()
+    {
+        // No ancestor state handles `damaged` event.
+        
+        // SLEEPING behavior
+        // uml: DAMAGED TransitionTo(SURPRISED)
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#SLEEPING_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `SURPRISED`.
+            this.#SURPRISED_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            this.stateId = Enemy3Sm.StateId.SURPRISED;
+            // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
+            return;
+        } // end of behavior for SLEEPING
     }
     
     #SLEEPING_do()
@@ -963,6 +997,95 @@ this.vars.e.playerDist() < 3)
         } // end of behavior for SLEEPING
     }
     
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state SURPRISED
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #SURPRISED_enter()
+    {
+        // setup trigger/event handlers
+        this.#currentStateExitHandler = this.#SURPRISED_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = this.#SURPRISED_damaged;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SURPRISED_do;
+        
+        // SURPRISED behavior
+        // uml: enter / { e.surprised.enter(); }
+        {
+            // Step 1: execute action `e.surprised.enter();`
+            this.vars.e.surprised.enter();
+        } // end of behavior for SURPRISED
+    }
+    
+    #SURPRISED_exit()
+    {
+        // SURPRISED behavior
+        // uml: exit / { e.surprised.exit(); }
+        {
+            // Step 1: execute action `e.surprised.exit();`
+            this.vars.e.surprised.exit();
+        } // end of behavior for SURPRISED
+        
+        // adjust function pointers for this state's exit
+        this.#currentStateExitHandler = this.#IDLE_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DAMAGED] = null;  // no ancestor listens to this event
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = null;  // no ancestor listens to this event
+    }
+    
+    #SURPRISED_damaged()
+    {
+        // No ancestor state handles `damaged` event.
+        
+        // SURPRISED behavior
+        // uml: DAMAGED / { e.jumpTowardsPlayer() } TransitionTo(IDLE.<ExitPoint>(hunt))
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#SURPRISED_exit();
+            
+            // Step 2: Transition action: `e.jumpTowardsPlayer()`.
+            this.vars.e.jumpTowardsPlayer()
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for SURPRISED
+    }
+    
+    #SURPRISED_do()
+    {
+        // No ancestor state handles `do` event.
+        
+        // SURPRISED behavior
+        // uml: do / { e.surprised.do(); }
+        {
+            // Step 1: execute action `e.surprised.do();`
+            this.vars.e.surprised.do();
+            
+            // Step 2: determine if ancestor gets to handle event next.
+            // Don't consume special `do` event.
+        } // end of behavior for SURPRISED
+        
+        // SURPRISED behavior
+        // uml: do [e.surprised.isDone()] TransitionTo(IDLE.<ExitPoint>(hunt))
+        if (this.vars.e.surprised.isDone())
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#SURPRISED_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for SURPRISED
+    }
+    
     // Thread safe.
     static stateIdToString(id)
     {
@@ -980,6 +1103,7 @@ this.vars.e.playerDist() < 3)
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
+            case Enemy3Sm.StateId.SURPRISED: return "SURPRISED";
             default: return "?";
         }
     }

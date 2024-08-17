@@ -1,7 +1,7 @@
 'use strict';
 
 class EnemyBlob extends Enemy {
-    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, shocked: 3, mad: 4, chomp: 5, hurt: 6 };
+    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6 };
 
     static baseTileIndex = 6;
 
@@ -26,7 +26,7 @@ class EnemyBlob extends Enemy {
         this.setCollision(true, false);
 
         /**
-         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy"}
+         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised"}
          */
         this.tileName = "sleeping";
     }
@@ -140,7 +140,7 @@ class EnemyBlob extends Enemy {
     }
 
     /**
-     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy"} tileName
+     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised"} tileName
      */
     tile(tileName) {
         this.tileName = tileName;
@@ -173,6 +173,7 @@ class EnemyBlob extends Enemy {
         this.velocity = vecToPlayer.multiply(vec2(jumpXSpeed, 0));
         this.velocity.y = jumpYSpeed;
         sound_jump.play(this.pos, .4, 2);
+        console.log("jumping towards player");
     }
 
     smallVerticalHop()
