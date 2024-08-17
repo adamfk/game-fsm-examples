@@ -99,7 +99,6 @@ class Enemy3 extends EnemyBlob
     {
         const vecToPlayer = this.normalVecToPlayer();
 
-        // if in air, drift towards target
         this.walkOrJumpTowardsTarget(vecToPlayer);
     }
 
@@ -111,7 +110,7 @@ class Enemy3 extends EnemyBlob
         engineObjectsCallback(this.pos, radius, (o)=>
         {
             if (o instanceof Enemy3 && o !== this) {
-                console.log("alerting comrade", this, o);
+                // console.log("alerting comrade", this, o);
                 o.alarmEvent();
             }
         });

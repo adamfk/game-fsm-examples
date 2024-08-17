@@ -141,7 +141,7 @@ class Lulling1 extends EnemyBlobSequence {
 
 class Surprised1 extends EnemyBlobSequence {
 
-    static textOptions = ["OH !@%@??!", "!@#$!!@#$!!@#$!", "WHAT THE !@#$!?", "WHOA!", "YIKES!", "OH NO!", "ZUT ALORS!!!",];
+    textOptions = ["OH !@%@??!", "!@#$!!@#$!!@#$!", "WHAT THE !@#$!?", "WHOA!", "YIKES!", "OH NO!", "ZUT ALORS!!!",];
 
     /**
      * @param {EnemyBlob} enemyBlob
@@ -159,7 +159,7 @@ class Surprised1 extends EnemyBlobSequence {
     }
 
     getText() {
-        return Surprised1.textOptions[randInt(0, Surprised1.textOptions.length)];
+        return this.textOptions[randInt(0, this.textOptions.length)];
     }
 
     do() {
@@ -174,7 +174,11 @@ class Surprised1 extends EnemyBlobSequence {
 
 class Alarm1 extends EnemyBlobSequence {
 
-    static textOptions = ["ALERT!", "HELP!", "INTRUDER!", "ALARM!", "DANGER!",];
+    textOptions = ["ALERT!", "HELP!", "INTRUDER!", "ALARM!", "DANGER!",];
+
+    evade = true;
+    minCalls = 3;
+    maxCalls = 8;
 
     /**
      * @param {Enemy3} enemyBlob
@@ -197,8 +201,20 @@ class Alarm1 extends EnemyBlobSequence {
         }
     }
 
+    setForEvade() {
+        this.evade = true;
+        this.minCalls = 3;
+        this.maxCalls = 8;
+    }
+
+    setForHunt() {
+        this.evade = false;
+        this.minCalls = 1;
+        this.maxCalls = 2;
+    }
+
     getText() {
-        return Surprised1.textOptions[randInt(0, Surprised1.textOptions.length)];
+        return this.textOptions[randInt(0, this.textOptions.length)];
     }
 
     do() {
@@ -207,7 +223,8 @@ class Alarm1 extends EnemyBlobSequence {
 
         super.do();
         this.gameObject.debugTextAboveMe(this.text);
-        const vectorAway = this.enemyBlob.normalVecToPlayer().scale(-1);
-        this.enemyBlob.walkOrJumpTowardsTarget(vectorAway);
+        const normalVecToPlayer = this.enemyBlob.normalVecToPlayer();
+        const target = this.evade ? normalVecToPlayer.scale(-1) : normalVecToPlayer;
+        this.enemyBlob.walkOrJumpTowardsTarget(target);
     }
 }
