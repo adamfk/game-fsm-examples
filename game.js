@@ -47,11 +47,18 @@ function gameInit()
     
 }
 
+// we can't use keyWasPressed() because it doesn't work when paused
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'KeyP') {
+        paused = !paused;
+    }
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 function gameUpdate()
 {
     // respawn player
-    if (player.deadTimer > 1)
+    if (player.deadTimer.get() > 1)
     {
         player = new Player(playerStartPos);
         player.velocity = vec2(0,.1);
