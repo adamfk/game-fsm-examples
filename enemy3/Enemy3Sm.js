@@ -343,38 +343,62 @@ class Enemy3Sm
         } // end of behavior for HUNTING
         
         // HUNTING behavior
-        // uml: do [player.isDead()] TransitionTo(ENEMY_WIN)
-        if (player.isDead())
+        // uml: do [timer.elapsed()] TransitionTo(HUNTING.<ExitPoint>(idle))
+        if (this.vars.timer.elapsed())
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(this.#ROOT_exit);
+            // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#HUNTING_exit);
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `ENEMY_WIN`.
-            this.#ENEMY_WIN_enter();
+            // Step 3: Enter/move towards transition target `HUNTING.<ExitPoint>(idle)`.
+            // HUNTING.<ExitPoint>(idle) is a pseudo state and cannot have an `enter` trigger.
             
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            this.stateId = Enemy3Sm.StateId.ENEMY_WIN;
-            // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
-            return;
+            // HUNTING.<ExitPoint>(idle) behavior
+            // uml: TransitionTo(IDLE)
+            {
+                // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+                this.#HUNTING_exit();
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `IDLE`.
+                this.#IDLE_enter();
+                
+                // Finish transition by calling pseudo state transition function.
+                this.#IDLE_InitialState_transition();
+                return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+            } // end of behavior for HUNTING.<ExitPoint>(idle)
         } // end of behavior for HUNTING
         
         // HUNTING behavior
-        // uml: do [timer.elapsed()] TransitionTo(IDLE)
-        if (this.vars.timer.elapsed())
+        // uml: do [player.isDead()] TransitionTo(HUNTING.<ExitPoint>(enemy_win))
+        if (player.isDead())
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(this.#ROOT_exit);
+            // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#HUNTING_exit);
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `IDLE`.
-            this.#IDLE_enter();
+            // Step 3: Enter/move towards transition target `HUNTING.<ExitPoint>(enemy_win)`.
+            // HUNTING.<ExitPoint>(enemy_win) is a pseudo state and cannot have an `enter` trigger.
             
-            // Finish transition by calling pseudo state transition function.
-            this.#IDLE_InitialState_transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+            // HUNTING.<ExitPoint>(enemy_win) behavior
+            // uml: TransitionTo(ENEMY_WIN)
+            {
+                // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+                this.#HUNTING_exit();
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `ENEMY_WIN`.
+                this.#ENEMY_WIN_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                this.stateId = Enemy3Sm.StateId.ENEMY_WIN;
+                // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
+                return;
+            } // end of behavior for HUNTING.<ExitPoint>(enemy_win)
         } // end of behavior for HUNTING
     }
     
@@ -735,18 +759,18 @@ rand() < 0.02)
         // No ancestor state handles `alarm` event.
         
         // IDLE behavior
-        // uml: ALARM TransitionTo(HUNTING)
+        // uml: ALARM TransitionTo(IDLE.<ExitPoint>(hunt))
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(this.#ROOT_exit);
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(this.#IDLE_exit);
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `HUNTING`.
-            this.#HUNTING_enter();
+            // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
+            // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#HUNTING_InitialState_transition();
+            this.#IDLE_ExitPoint_hunt__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for IDLE
     }
@@ -841,22 +865,29 @@ rand() < 0.02)
             // Step 3: Enter/move towards transition target `IDLE.<ExitPoint>(hunt)`.
             // IDLE.<ExitPoint>(hunt) is a pseudo state and cannot have an `enter` trigger.
             
-            // IDLE.<ExitPoint>(hunt) behavior
-            // uml: TransitionTo(HUNTING)
-            {
-                // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-                this.#IDLE_exit();
-                
-                // Step 2: Transition action: ``.
-                
-                // Step 3: Enter/move towards transition target `HUNTING`.
-                this.#HUNTING_enter();
-                
-                // Finish transition by calling pseudo state transition function.
-                this.#HUNTING_InitialState_transition();
-                return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-            } // end of behavior for IDLE.<ExitPoint>(hunt)
+            // Finish transition by calling pseudo state transition function.
+            this.#IDLE_ExitPoint_hunt__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for IDLE.<ChoicePoint>()
+    }
+    
+    #IDLE_ExitPoint_hunt__transition()
+    {
+        // IDLE.<ExitPoint>(hunt) behavior
+        // uml: TransitionTo(HUNTING)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            this.#IDLE_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `HUNTING`.
+            this.#HUNTING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#HUNTING_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for IDLE.<ExitPoint>(hunt)
     }
     
     
