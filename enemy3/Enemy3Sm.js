@@ -31,11 +31,13 @@ class Enemy3Sm
         FALLING_A_SLEEP : 11,
         WAKING : 12,
         SLEEPING : 13,
-        SURPRISED : 14,
+        ABOUT_TO_STIR : 14,
+        DEEP_SLEEP : 15,
+        SURPRISED : 16,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 15;
+    static StateIdCount = 17;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -800,8 +802,8 @@ rand() < 0.02)
     #IDLE_ChoicePoint__transition()
     {
         // IDLE.<ChoicePoint>() behavior
-        // uml: [rand() < 0.75] TransitionTo(IDLE.<ExitPoint>(sound_alarm))
-        if (rand() < 0.75)
+        // uml: [rand() < 0.5] TransitionTo(IDLE.<ExitPoint>(sound_alarm))
+        if (rand() < 0.5)
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
             
@@ -1043,10 +1045,21 @@ this.vars.e.dance.isDone())
             // Step 3: Enter/move towards transition target `SLEEPING`.
             this.#SLEEPING_enter();
             
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            this.stateId = Enemy3Sm.StateId.SLEEPING;
-            this.#ancestorEventHandler = null;
-            return;
+            // SLEEPING.<InitialState> behavior
+            // uml: TransitionTo(DEEP_SLEEP)
+            {
+                // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `DEEP_SLEEP`.
+                this.#DEEP_SLEEP_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                this.stateId = Enemy3Sm.StateId.DEEP_SLEEP;
+                this.#ancestorEventHandler = null;
+                return;
+            } // end of behavior for SLEEPING.<InitialState>
         } // end of behavior for FALLING_A_SLEEP
         
         // FALLING_A_SLEEP behavior
@@ -1179,20 +1192,21 @@ rand() < 0.5)
         this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SLEEPING_do;
         
         // SLEEPING behavior
-        // uml: enter / { timer.set(3);\ne.tile("sleeping"); }
+        // uml: enter / { e.tile("sleeping");\ne.disableAttack = true; }
         {
-            // Step 1: execute action `timer.set(3);\ne.tile("sleeping");`
-            this.vars.timer.set(3);
+            // Step 1: execute action `e.tile("sleeping");\ne.disableAttack = true;`
             this.vars.e.tile("sleeping");
+            this.vars.e.disableAttack = true;
         } // end of behavior for SLEEPING
     }
     
     #SLEEPING_exit()
     {
         // SLEEPING behavior
-        // uml: exit
+        // uml: exit / { e.disableAttack = false; }
         {
-            // Step 1: execute action ``
+            // Step 1: execute action `e.disableAttack = false;`
+            this.vars.e.disableAttack = false;
         } // end of behavior for SLEEPING
         
         // adjust function pointers for this state's exit
@@ -1209,7 +1223,7 @@ rand() < 0.5)
         // uml: DAMAGED TransitionTo(SURPRISED)
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#SLEEPING_exit();
+            this.#exitUpToStateHandler(this.#IDLE_exit);
             
             // Step 2: Transition action: ``.
             
@@ -1228,34 +1242,159 @@ rand() < 0.5)
         // No ancestor state handles `do` event.
         
         // SLEEPING behavior
-        // uml: do / { e.debugCircle(3, "#0F08"); }
+        // uml: do
         {
-            // Step 1: execute action `e.debugCircle(3, "#0F08");`
-            this.vars.e.debugCircle(3, "#0F08");
-            
+            // Step 1: execute action ``
             // Step 2: determine if ancestor gets to handle event next.
             // Don't consume special `do` event.
         } // end of behavior for SLEEPING
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state ABOUT_TO_STIR
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #ABOUT_TO_STIR_enter()
+    {
+        // setup trigger/event handlers
+        this.#currentStateExitHandler = this.#ABOUT_TO_STIR_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#ABOUT_TO_STIR_do;
         
-        // SLEEPING behavior
-        // uml: do [timer.elapsed() ||\ne.playerDist() < 3] TransitionTo(WAKING)
-        if (this.vars.timer.elapsed() ||
-this.vars.e.playerDist() < 3)
+        // ABOUT_TO_STIR behavior
+        // uml: enter / { timer.set(rand(0.5, 2)); }
         {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#SLEEPING_exit();
+            // Step 1: execute action `timer.set(rand(0.5, 2));`
+            this.vars.timer.set(rand(0.5, 2));
+        } // end of behavior for ABOUT_TO_STIR
+    }
+    
+    #ABOUT_TO_STIR_exit()
+    {
+        // ABOUT_TO_STIR behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for ABOUT_TO_STIR
+        
+        // adjust function pointers for this state's exit
+        this.#currentStateExitHandler = this.#SLEEPING_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SLEEPING_do;  // the next ancestor that handles this event is SLEEPING
+    }
+    
+    #ABOUT_TO_STIR_do()
+    {
+        // Setup handler for next ancestor that listens to `do` event.
+        this.#ancestorEventHandler = this.#SLEEPING_do;
+        
+        // ABOUT_TO_STIR behavior
+        // uml: do / { e.debugTextAboveMe("zz.."); }
+        {
+            // Step 1: execute action `e.debugTextAboveMe("zz..");`
+            this.vars.e.debugTextAboveMe("zz..");
+            
+            // Step 2: determine if ancestor gets to handle event next.
+            // Don't consume special `do` event.
+        } // end of behavior for ABOUT_TO_STIR
+        
+        // ABOUT_TO_STIR behavior
+        // uml: do [timer.elapsed()] TransitionTo(SLEEPING.<ExitPoint>(1))
+        if (this.vars.timer.elapsed())
+        {
+            // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition).
+            this.#ABOUT_TO_STIR_exit();
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `WAKING`.
-            this.#CHECK_VISION_enter();
-            this.#WAKING_enter();
+            // Step 3: Enter/move towards transition target `SLEEPING.<ExitPoint>(1)`.
+            // SLEEPING.<ExitPoint>(1) is a pseudo state and cannot have an `enter` trigger.
+            
+            // SLEEPING.<ExitPoint>(1) behavior
+            // uml: TransitionTo(WAKING)
+            {
+                // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+                this.#SLEEPING_exit();
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `WAKING`.
+                this.#CHECK_VISION_enter();
+                this.#WAKING_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                this.stateId = Enemy3Sm.StateId.WAKING;
+                this.#ancestorEventHandler = null;
+                return;
+            } // end of behavior for SLEEPING.<ExitPoint>(1)
+        } // end of behavior for ABOUT_TO_STIR
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state DEEP_SLEEP
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #DEEP_SLEEP_enter()
+    {
+        // setup trigger/event handlers
+        this.#currentStateExitHandler = this.#DEEP_SLEEP_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#DEEP_SLEEP_do;
+        
+        // DEEP_SLEEP behavior
+        // uml: enter / { timer.set(rand(3,8)); }
+        {
+            // Step 1: execute action `timer.set(rand(3,8));`
+            this.vars.timer.set(rand(3,8));
+        } // end of behavior for DEEP_SLEEP
+    }
+    
+    #DEEP_SLEEP_exit()
+    {
+        // DEEP_SLEEP behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for DEEP_SLEEP
+        
+        // adjust function pointers for this state's exit
+        this.#currentStateExitHandler = this.#SLEEPING_exit;
+        this.#currentEventHandlers[Enemy3Sm.EventId.DO] = this.#SLEEPING_do;  // the next ancestor that handles this event is SLEEPING
+    }
+    
+    #DEEP_SLEEP_do()
+    {
+        // Setup handler for next ancestor that listens to `do` event.
+        this.#ancestorEventHandler = this.#SLEEPING_do;
+        
+        // DEEP_SLEEP behavior
+        // uml: do / { e.debugCircle(1, "#0F08"); \ne.debugTextAboveMe("zzz..."); }
+        {
+            // Step 1: execute action `e.debugCircle(1, "#0F08"); \ne.debugTextAboveMe("zzz...");`
+            this.vars.e.debugCircle(1, "#0F08"); 
+            this.vars.e.debugTextAboveMe("zzz...");
+            
+            // Step 2: determine if ancestor gets to handle event next.
+            // Don't consume special `do` event.
+        } // end of behavior for DEEP_SLEEP
+        
+        // DEEP_SLEEP behavior
+        // uml: do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)
+        if (this.vars.timer.elapsed() ||
+this.vars.e.playerDist() < 1)
+        {
+            // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition).
+            this.#DEEP_SLEEP_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `ABOUT_TO_STIR`.
+            this.#ABOUT_TO_STIR_enter();
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            this.stateId = Enemy3Sm.StateId.WAKING;
-            // No ancestor handles event. Can skip nulling `ancestorEventHandler`.
+            this.stateId = Enemy3Sm.StateId.ABOUT_TO_STIR;
+            this.#ancestorEventHandler = null;
             return;
-        } // end of behavior for SLEEPING
+        } // end of behavior for DEEP_SLEEP
     }
     
     
@@ -1365,6 +1504,8 @@ this.vars.e.playerDist() < 3)
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
+            case Enemy3Sm.StateId.ABOUT_TO_STIR: return "ABOUT_TO_STIR";
+            case Enemy3Sm.StateId.DEEP_SLEEP: return "DEEP_SLEEP";
             case Enemy3Sm.StateId.SURPRISED: return "SURPRISED";
             default: return "?";
         }

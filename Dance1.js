@@ -155,7 +155,7 @@ class Surprised1 extends EnemyBlobSequence {
             enemyBlob.smallVerticalHop();
             enemyBlob.tile("surprised");
         });
-        this.addDelayAction(1);
+        this.addDelayAction(rand(0.5,2));
     }
 
     getText() {

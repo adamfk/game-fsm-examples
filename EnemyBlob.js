@@ -24,6 +24,7 @@ class EnemyBlob extends Enemy {
         this.swellSpeed = 6;
         this.swellTimer = new Timer(rand(1e3));
         this.setCollision(true, false);
+        this.disableAttack = false;
 
         /**
          * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"}
@@ -58,7 +59,9 @@ class EnemyBlob extends Enemy {
      * @param {number} amountOfDamage
      */
     dealDamageToPlayer(player, amountOfDamage) {
-        player.damage(amountOfDamage, this);
+        if (!this.disableAttack){
+            player.damage(amountOfDamage, this);
+        }
     }
 
     /**
