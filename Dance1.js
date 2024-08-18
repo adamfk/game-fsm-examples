@@ -174,7 +174,8 @@ class Surprised1 extends EnemyBlobSequence {
 
 class Alarm1 extends EnemyBlobSequence {
 
-    textOptions = ["ALERT!", "HELP!", "INTRUDER!", "ALARM!", "DANGER!",];
+    evadeTextOptions = ["ALERT!", "HELP!", "INTRUDER!", "ALARM!", "DANGER!",];
+    attackTextOptions = ["TO ARMS!", "ATTACK!", "GET THEM!", "HUNT!"];
 
     evade = true;
     minCalls = 3;
@@ -191,7 +192,12 @@ class Alarm1 extends EnemyBlobSequence {
         this.addSimpleAction(() => {
             enemyBlob.swellSpeed = 10;
             enemyBlob.tile("alarm");
-        });
+            if (this.evade) {
+                this.text = "[must warn others]";
+            } else {
+                this.text = "[i need backup]";
+            }
+        }, rand(0.5,1.5));
 
         for (let i = 0; i < rand(3,8); i++) {
             this.addSimpleAction(() => {
@@ -214,7 +220,10 @@ class Alarm1 extends EnemyBlobSequence {
     }
 
     getText() {
-        return this.textOptions[randInt(0, this.textOptions.length)];
+        if (this.evade) {
+            return this.evadeTextOptions[randInt(0, this.evadeTextOptions.length)];
+        }
+        return this.attackTextOptions[randInt(0, this.attackTextOptions.length)];
     }
 
     do() {
