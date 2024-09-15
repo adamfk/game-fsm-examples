@@ -14,7 +14,7 @@ class StallTracker
     }
 
     /**
-     * @param {Vector2?} startingPos
+     * @param {Vector2} [startingPos]
      */
     reset(startingPos)
     {
