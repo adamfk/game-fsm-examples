@@ -42,6 +42,7 @@ class Enemy3 extends EnemyBlob
 
         // run state machine
         this.sm.dispatchEvent(Enemy3Sm.EventId.DO);
+        this.debugTextBelowMe(Enemy3Sm.stateIdToString(this.sm.stateId));
 
         this.attemptedVelocity = this.velocity.copy();
     }

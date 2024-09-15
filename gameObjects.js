@@ -117,6 +117,13 @@ class GameObject extends EngineObject
     }
 
     /**
+     * @param {string} str
+     */
+    debugTextBelowMe(str) {
+        debugText(str, this.pos.add(vec2(0,-1)), 0.5);
+    }
+
+    /**
      * @param {number} radius
      */
     debugCircle(radius, color='#FFF3') {
