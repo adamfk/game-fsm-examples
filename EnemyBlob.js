@@ -10,6 +10,7 @@ class EnemyBlob extends Enemy {
         hunt: new Sound([1.5, -0.25, , .07, .23, .25, , 4.5, 5, , , .12, .08, , 17.1, , , .97, .18, 1, 505]),
         laugh: new Sound([1.5, -0.25, 440, .07, .31, .44, , 4.5, 5, , , , .08, , 15, , , .97, .12, , 505]),
         mutter: new Sound([1.5, -0.25, 65.40639, .07, .23, .25, , 4.5, 5, , , .12, .08, , 17.1, , , .97, .18, 1, 505]),
+        jumpedOn: new Sound([,,321,.01,.06,.16,1,3,-7,1,,,,1.6,,.1,,.78,.02]) // Hit 25
     };
 
     /**
@@ -46,6 +47,7 @@ class EnemyBlob extends Enemy {
                 player.velocity.y = 0.1; // less camera shake
                 this.velocity.y = -0.02; // make enemy bounce back. Important so that high velocity enemy jump doesn't go through the player
                 this.jumpedOnEvent(player);
+                this.sounds.jumpedOn.play(this.pos, 0.4);
             }
             else {
                 this.dealDamageToPlayer(player, 1);
