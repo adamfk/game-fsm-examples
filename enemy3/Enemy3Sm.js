@@ -19,21 +19,21 @@ class Enemy3Sm
     {
         ROOT : 0,
         ENEMY_WIN : 1,
-        ENEMY3SM__SOUND_ALARM : 2,
-        HUNTING : 3,
+        HUNTING : 2,
+        CALL_FOR_BACKUP : 3,
         CHARGE : 4,
         CHARGE_REST : 5,
         HUNT : 6,
-        HUNTING__SOUND_ALARM : 7,
-        IDLE : 8,
-        CHECK_VISION : 9,
-        DANCE : 10,
-        FALLING_A_SLEEP : 11,
-        WAKING : 12,
-        SLEEPING : 13,
-        ABOUT_TO_STIR : 14,
-        DEEP_SLEEP : 15,
-        SURPRISED : 16,
+        IDLE : 7,
+        CHECK_VISION : 8,
+        DANCE : 9,
+        FALLING_A_SLEEP : 10,
+        WAKING : 11,
+        SLEEPING : 12,
+        ABOUT_TO_STIR : 13,
+        DEEP_SLEEP : 14,
+        SURPRISED : 15,
+        SOUND_ALARM : 16,
     }
     static { Object.freeze(this.StateId); }
     
@@ -100,19 +100,19 @@ class Enemy3Sm
                 }
                 break;
             
-            // STATE: Enemy3Sm__SOUND_ALARM
-            case Enemy3Sm.StateId.ENEMY3SM__SOUND_ALARM:
-                switch (eventId)
-                {
-                    case Enemy3Sm.EventId.DO: this.#ENEMY3SM__SOUND_ALARM_do(); break;
-                }
-                break;
-            
             // STATE: HUNTING
             case Enemy3Sm.StateId.HUNTING:
                 switch (eventId)
                 {
                     case Enemy3Sm.EventId.DO: this.#HUNTING_do(); break;
+                }
+                break;
+            
+            // STATE: CALL_FOR_BACKUP
+            case Enemy3Sm.StateId.CALL_FOR_BACKUP:
+                switch (eventId)
+                {
+                    case Enemy3Sm.EventId.DO: this.#CALL_FOR_BACKUP_do(); break;
                 }
                 break;
             
@@ -137,14 +137,6 @@ class Enemy3Sm
                 switch (eventId)
                 {
                     case Enemy3Sm.EventId.DO: this.#HUNT_do(); break;
-                }
-                break;
-            
-            // STATE: HUNTING__SOUND_ALARM
-            case Enemy3Sm.StateId.HUNTING__SOUND_ALARM:
-                switch (eventId)
-                {
-                    case Enemy3Sm.EventId.DO: this.#HUNTING__SOUND_ALARM_do(); break;
                 }
                 break;
             
@@ -235,6 +227,14 @@ class Enemy3Sm
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
                 }
                 break;
+            
+            // STATE: SOUND_ALARM
+            case Enemy3Sm.StateId.SOUND_ALARM:
+                switch (eventId)
+                {
+                    case Enemy3Sm.EventId.DO: this.#SOUND_ALARM_do(); break;
+                }
+                break;
         }
         
     }
@@ -249,17 +249,15 @@ class Enemy3Sm
             {
                 case Enemy3Sm.StateId.ENEMY_WIN: this.#ENEMY_WIN_exit(); break;
                 
-                case Enemy3Sm.StateId.ENEMY3SM__SOUND_ALARM: this.#ENEMY3SM__SOUND_ALARM_exit(); break;
-                
                 case Enemy3Sm.StateId.HUNTING: this.#HUNTING_exit(); break;
+                
+                case Enemy3Sm.StateId.CALL_FOR_BACKUP: this.#CALL_FOR_BACKUP_exit(); break;
                 
                 case Enemy3Sm.StateId.CHARGE: this.#CHARGE_exit(); break;
                 
                 case Enemy3Sm.StateId.CHARGE_REST: this.#CHARGE_REST_exit(); break;
                 
                 case Enemy3Sm.StateId.HUNT: this.#HUNT_exit(); break;
-                
-                case Enemy3Sm.StateId.HUNTING__SOUND_ALARM: this.#HUNTING__SOUND_ALARM_exit(); break;
                 
                 case Enemy3Sm.StateId.IDLE: this.#IDLE_exit(); break;
                 
@@ -278,6 +276,8 @@ class Enemy3Sm
                 case Enemy3Sm.StateId.DEEP_SLEEP: this.#DEEP_SLEEP_exit(); break;
                 
                 case Enemy3Sm.StateId.SURPRISED: this.#SURPRISED_exit(); break;
+                
+                case Enemy3Sm.StateId.SOUND_ALARM: this.#SOUND_ALARM_exit(); break;
                 
                 default: return;  // Just to be safe. Prevents infinite loop if state ID memory is somehow corrupted.
             }
@@ -352,71 +352,6 @@ class Enemy3Sm
             this.#HUNTING_InitialState_transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for ENEMY_WIN
-        
-        // No ancestor handles this event.
-    }
-    
-    
-    ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state ENEMY3SM__SOUND_ALARM
-    ////////////////////////////////////////////////////////////////////////////////
-    
-    #ENEMY3SM__SOUND_ALARM_enter()
-    {
-        this.stateId = Enemy3Sm.StateId.ENEMY3SM__SOUND_ALARM;
-        
-        // Enemy3Sm__SOUND_ALARM behavior
-        // uml: enter / { e.alarm.setForEvade(); }
-        {
-            // Step 1: execute action `e.alarm.setForEvade();`
-            this.vars.e.alarm.setForEvade();
-        } // end of behavior for Enemy3Sm__SOUND_ALARM
-        
-        // Enemy3Sm__SOUND_ALARM behavior
-        // uml: enter / { e.alarm.enter(); }
-        {
-            // Step 1: execute action `e.alarm.enter();`
-            this.vars.e.alarm.enter();
-        } // end of behavior for Enemy3Sm__SOUND_ALARM
-    }
-    
-    #ENEMY3SM__SOUND_ALARM_exit()
-    {
-        // Enemy3Sm__SOUND_ALARM behavior
-        // uml: exit / { e.alarm.exit(); }
-        {
-            // Step 1: execute action `e.alarm.exit();`
-            this.vars.e.alarm.exit();
-        } // end of behavior for Enemy3Sm__SOUND_ALARM
-        
-        this.stateId = Enemy3Sm.StateId.ROOT;
-    }
-    
-    #ENEMY3SM__SOUND_ALARM_do()
-    {
-        // Enemy3Sm__SOUND_ALARM behavior
-        // uml: do / { e.alarm.do(); }
-        {
-            // Step 1: execute action `e.alarm.do();`
-            this.vars.e.alarm.do();
-        } // end of behavior for Enemy3Sm__SOUND_ALARM
-        
-        // Enemy3Sm__SOUND_ALARM behavior
-        // uml: do [e.alarm.isDone()] TransitionTo(HUNTING)
-        if (this.vars.e.alarm.isDone())
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#ENEMY3SM__SOUND_ALARM_exit();
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `HUNTING`.
-            this.#HUNTING_enter();
-            
-            // Finish transition by calling pseudo state transition function.
-            this.#HUNTING_InitialState_transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-        } // end of behavior for Enemy3Sm__SOUND_ALARM
         
         // No ancestor handles this event.
     }
@@ -542,6 +477,77 @@ class Enemy3Sm
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
         } // end of behavior for HUNTING.<InitialState>
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state CALL_FOR_BACKUP
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #CALL_FOR_BACKUP_enter()
+    {
+        this.stateId = Enemy3Sm.StateId.CALL_FOR_BACKUP;
+        
+        // CALL_FOR_BACKUP behavior
+        // uml: enter / { e.alarm.setForHunt(); }
+        {
+            // Step 1: execute action `e.alarm.setForHunt();`
+            this.vars.e.alarm.setForHunt();
+        } // end of behavior for CALL_FOR_BACKUP
+        
+        // CALL_FOR_BACKUP behavior
+        // uml: enter / { e.alarm.enter(); }
+        {
+            // Step 1: execute action `e.alarm.enter();`
+            this.vars.e.alarm.enter();
+        } // end of behavior for CALL_FOR_BACKUP
+    }
+    
+    #CALL_FOR_BACKUP_exit()
+    {
+        // CALL_FOR_BACKUP behavior
+        // uml: exit / { e.alarm.exit(); }
+        {
+            // Step 1: execute action `e.alarm.exit();`
+            this.vars.e.alarm.exit();
+        } // end of behavior for CALL_FOR_BACKUP
+        
+        this.stateId = Enemy3Sm.StateId.HUNTING;
+    }
+    
+    #CALL_FOR_BACKUP_do()
+    {
+        let consume_event = false;
+        
+        // CALL_FOR_BACKUP behavior
+        // uml: do / { e.alarm.do(); }
+        {
+            // `do` events are not normally consumed.
+            // Step 1: execute action `e.alarm.do();`
+            this.vars.e.alarm.do();
+        } // end of behavior for CALL_FOR_BACKUP
+        
+        // CALL_FOR_BACKUP behavior
+        // uml: do [e.alarm.isDone()] TransitionTo(HUNT)
+        if (this.vars.e.alarm.isDone())
+        {
+            // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
+            this.#CALL_FOR_BACKUP_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `HUNT`.
+            this.#HUNT_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for CALL_FOR_BACKUP
+        
+        // Check if event has been consumed before calling ancestor handler.
+        if (!consume_event)
+        {
+            this.#HUNTING_do();
+        }
     }
     
     
@@ -730,7 +736,7 @@ rand() < 0.02)
         } // end of behavior for HUNT
         
         // HUNT behavior
-        // uml: do [rand() < 0.001] TransitionTo(HUNTING__SOUND_ALARM)
+        // uml: do [rand() < 0.001] TransitionTo(CALL_FOR_BACKUP)
         if (rand() < 0.001)
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
@@ -738,83 +744,12 @@ rand() < 0.02)
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `HUNTING__SOUND_ALARM`.
-            this.#HUNTING__SOUND_ALARM_enter();
+            // Step 3: Enter/move towards transition target `CALL_FOR_BACKUP`.
+            this.#CALL_FOR_BACKUP_enter();
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
         } // end of behavior for HUNT
-        
-        // Check if event has been consumed before calling ancestor handler.
-        if (!consume_event)
-        {
-            this.#HUNTING_do();
-        }
-    }
-    
-    
-    ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state HUNTING__SOUND_ALARM
-    ////////////////////////////////////////////////////////////////////////////////
-    
-    #HUNTING__SOUND_ALARM_enter()
-    {
-        this.stateId = Enemy3Sm.StateId.HUNTING__SOUND_ALARM;
-        
-        // HUNTING__SOUND_ALARM behavior
-        // uml: enter / { e.alarm.setForHunt(); }
-        {
-            // Step 1: execute action `e.alarm.setForHunt();`
-            this.vars.e.alarm.setForHunt();
-        } // end of behavior for HUNTING__SOUND_ALARM
-        
-        // HUNTING__SOUND_ALARM behavior
-        // uml: enter / { e.alarm.enter(); }
-        {
-            // Step 1: execute action `e.alarm.enter();`
-            this.vars.e.alarm.enter();
-        } // end of behavior for HUNTING__SOUND_ALARM
-    }
-    
-    #HUNTING__SOUND_ALARM_exit()
-    {
-        // HUNTING__SOUND_ALARM behavior
-        // uml: exit / { e.alarm.exit(); }
-        {
-            // Step 1: execute action `e.alarm.exit();`
-            this.vars.e.alarm.exit();
-        } // end of behavior for HUNTING__SOUND_ALARM
-        
-        this.stateId = Enemy3Sm.StateId.HUNTING;
-    }
-    
-    #HUNTING__SOUND_ALARM_do()
-    {
-        let consume_event = false;
-        
-        // HUNTING__SOUND_ALARM behavior
-        // uml: do / { e.alarm.do(); }
-        {
-            // `do` events are not normally consumed.
-            // Step 1: execute action `e.alarm.do();`
-            this.vars.e.alarm.do();
-        } // end of behavior for HUNTING__SOUND_ALARM
-        
-        // HUNTING__SOUND_ALARM behavior
-        // uml: do [e.alarm.isDone()] TransitionTo(HUNT)
-        if (this.vars.e.alarm.isDone())
-        {
-            // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
-            this.#HUNTING__SOUND_ALARM_exit();
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `HUNT`.
-            this.#HUNT_enter();
-            
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for HUNTING__SOUND_ALARM
         
         // Check if event has been consumed before calling ancestor handler.
         if (!consume_event)
@@ -924,15 +859,15 @@ rand() < 0.02)
             // IDLE.<ExitPoint>(sound_alarm) is a pseudo state and cannot have an `enter` trigger.
             
             // IDLE.<ExitPoint>(sound_alarm) behavior
-            // uml: TransitionTo(Enemy3Sm__SOUND_ALARM)
+            // uml: TransitionTo(SOUND_ALARM)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
                 this.#IDLE_exit();
                 
                 // Step 2: Transition action: ``.
                 
-                // Step 3: Enter/move towards transition target `Enemy3Sm__SOUND_ALARM`.
-                this.#ENEMY3SM__SOUND_ALARM_enter();
+                // Step 3: Enter/move towards transition target `SOUND_ALARM`.
+                this.#SOUND_ALARM_enter();
                 
                 // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
                 return;
@@ -1553,6 +1488,71 @@ this.vars.e.playerDist() < 1)
         // No ancestor handles this event.
     }
     
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state SOUND_ALARM
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #SOUND_ALARM_enter()
+    {
+        this.stateId = Enemy3Sm.StateId.SOUND_ALARM;
+        
+        // SOUND_ALARM behavior
+        // uml: enter / { e.alarm.setForEvade(); }
+        {
+            // Step 1: execute action `e.alarm.setForEvade();`
+            this.vars.e.alarm.setForEvade();
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: enter / { e.alarm.enter(); }
+        {
+            // Step 1: execute action `e.alarm.enter();`
+            this.vars.e.alarm.enter();
+        } // end of behavior for SOUND_ALARM
+    }
+    
+    #SOUND_ALARM_exit()
+    {
+        // SOUND_ALARM behavior
+        // uml: exit / { e.alarm.exit(); }
+        {
+            // Step 1: execute action `e.alarm.exit();`
+            this.vars.e.alarm.exit();
+        } // end of behavior for SOUND_ALARM
+        
+        this.stateId = Enemy3Sm.StateId.ROOT;
+    }
+    
+    #SOUND_ALARM_do()
+    {
+        // SOUND_ALARM behavior
+        // uml: do / { e.alarm.do(); }
+        {
+            // Step 1: execute action `e.alarm.do();`
+            this.vars.e.alarm.do();
+        } // end of behavior for SOUND_ALARM
+        
+        // SOUND_ALARM behavior
+        // uml: do [e.alarm.isDone()] TransitionTo(HUNTING)
+        if (this.vars.e.alarm.isDone())
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            this.#SOUND_ALARM_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `HUNTING`.
+            this.#HUNTING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#HUNTING_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for SOUND_ALARM
+        
+        // No ancestor handles this event.
+    }
+    
     // Thread safe.
     static stateIdToString(id)
     {
@@ -1560,12 +1560,11 @@ this.vars.e.playerDist() < 1)
         {
             case Enemy3Sm.StateId.ROOT: return "ROOT";
             case Enemy3Sm.StateId.ENEMY_WIN: return "ENEMY_WIN";
-            case Enemy3Sm.StateId.ENEMY3SM__SOUND_ALARM: return "ENEMY3SM__SOUND_ALARM";
             case Enemy3Sm.StateId.HUNTING: return "HUNTING";
+            case Enemy3Sm.StateId.CALL_FOR_BACKUP: return "CALL_FOR_BACKUP";
             case Enemy3Sm.StateId.CHARGE: return "CHARGE";
             case Enemy3Sm.StateId.CHARGE_REST: return "CHARGE_REST";
             case Enemy3Sm.StateId.HUNT: return "HUNT";
-            case Enemy3Sm.StateId.HUNTING__SOUND_ALARM: return "HUNTING__SOUND_ALARM";
             case Enemy3Sm.StateId.IDLE: return "IDLE";
             case Enemy3Sm.StateId.CHECK_VISION: return "CHECK_VISION";
             case Enemy3Sm.StateId.DANCE: return "DANCE";
@@ -1575,6 +1574,7 @@ this.vars.e.playerDist() < 1)
             case Enemy3Sm.StateId.ABOUT_TO_STIR: return "ABOUT_TO_STIR";
             case Enemy3Sm.StateId.DEEP_SLEEP: return "DEEP_SLEEP";
             case Enemy3Sm.StateId.SURPRISED: return "SURPRISED";
+            case Enemy3Sm.StateId.SOUND_ALARM: return "SOUND_ALARM";
             default: return "?";
         }
     }
