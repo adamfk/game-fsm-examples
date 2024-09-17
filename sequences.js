@@ -6,7 +6,7 @@ class EnemyBlobSequence extends ActionSequence {
      */
     constructor(enemyBlob) {
         super();
-        this.gameObject = enemyBlob;
+        this.enemyBlob = enemyBlob;
     }
 
     /**
@@ -14,11 +14,62 @@ class EnemyBlobSequence extends ActionSequence {
      * @param {number} duration
      */
     addTileAction(tileName, duration) {
-        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addSimpleAction(() => { this.enemyBlob.tile(tileName) });
         this.addDelayAction(duration);
     }
 }
 
+class Charge1 extends EnemyBlobSequence {
+    /**
+     * @param {EnemyBlob} enemyBlob
+     */
+    constructor(enemyBlob) {
+        super(enemyBlob);
+        this.timer = new Timer();
+        this.chargeMaxTime = 0.5;
+
+        /** @type {Vector2} */
+        this.targetVec = null;
+
+        // charge up and then launch at player's position
+        {
+            const action = new ActionHandler();
+            action.enter = () => {
+                this.enemyBlob.angle = 0;
+                this.targetVec = this.enemyBlob.normalVecToPlayer();
+                this.timer.set();
+            };
+            action.isDone = () => {
+                return this.timer.get() >= this.chargeMaxTime + 0.01;
+            };
+            action.do = () => {
+                const chargeRatio = this.timer.get() / this.chargeMaxTime;
+                this.enemyBlob.angle = chargeRatio * PI/2;
+        
+                // launch towards player!
+                if (chargeRatio >= 1) {
+                    // this.velocity = this.normalVecToPlayer(); // THIS IS INSANE!!! YEET MODE!
+                    this.enemyBlob.velocity.x = this.targetVec.x;
+        
+                    // slow it down a bit if we are in the air (no friction)
+                    if (!this.enemyBlob.groundObject) {
+                        this.enemyBlob.velocity.x *= 0.3;
+                    }
+                }
+            }
+            action.exit = () => {
+                // this.enemyBlob.velocity.x = 0;
+                this.enemyBlob.angle = 0;
+            }
+            this.add(action);
+        }
+
+        // rest post charge
+        this.addSimpleAction(() => {
+            this.enemyBlob.tile("groggy");
+        }, 1.5);
+    }
+}
 
 class Dance1 extends EnemyBlobSequence {
 
@@ -56,8 +107,8 @@ class Dance1 extends EnemyBlobSequence {
     exit() {
         super.exit();
 
-        this.gameObject.velocity = vec2();
-        this.gameObject.angle = 0;
+        this.enemyBlob.velocity = vec2();
+        this.enemyBlob.angle = 0;
         // this.gameObject.mirror = false; // leave as is
     }
 
@@ -72,15 +123,15 @@ class Dance1 extends EnemyBlobSequence {
 
         const action = new ActionHandler();
         action.enter = () => {
-            const mirroredSign = this.gameObject.getMirrorSign();
+            const mirroredSign = this.enemyBlob.getMirrorSign();
             desiredAngle = mirroredSign * originalDesiredAngle;
-            incPerFrame = (desiredAngle - this.gameObject.angle) / frameCount;
+            incPerFrame = (desiredAngle - this.enemyBlob.angle) / frameCount;
         };
         action.do = () => {
-            this.gameObject.angle += incPerFrame;
+            this.enemyBlob.angle += incPerFrame;
         };
         action.isDone = () => {
-            const absDiff = Math.abs(this.gameObject.angle - desiredAngle);
+            const absDiff = Math.abs(this.enemyBlob.angle - desiredAngle);
             return absDiff <= Math.abs(incPerFrame);
         };
         this.add(action);
@@ -90,13 +141,13 @@ class Dance1 extends EnemyBlobSequence {
     addHopAction() {
         const action = new ActionHandler();
         action.enter = () => {
-            this.gameObject.velocity.y = 0.1;
-            sound_jump.play(this.gameObject.pos, .4, 2);
+            this.enemyBlob.velocity.y = 0.1;
+            sound_jump.play(this.enemyBlob.pos, .4, 2);
         };
         action.do = () => {
         };
         action.isDone = () => {
-            return this.gameObject.groundObject;
+            return this.enemyBlob.groundObject;
         };
         this.add(action);
     }
@@ -167,7 +218,7 @@ class Surprised1 extends EnemyBlobSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe(this.text);
+        this.enemyBlob.debugTextAboveMe(this.text);
     }
 }
 
@@ -231,7 +282,7 @@ class Alarm1 extends EnemyBlobSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe(this.text);
+        this.enemyBlob.debugTextAboveMe(this.text);
         const normalVecToPlayer = this.enemyBlob.normalVecToPlayer();
         const target = this.evade ? normalVecToPlayer.scale(-1) : normalVecToPlayer;
         this.enemyBlob.walkOrJumpTowardsTarget(target);
@@ -252,7 +303,6 @@ class Notice1 extends EnemyBlobSequence {
         this.enemyBlob = enemyBlob;
         this.text = "";
         this.shouldIdle = false;
-        this.shouldGrenadeDive = false;
 
         // if no notice source, use player
         if (!noticeSource || !noticeSource.pos) {
@@ -260,7 +310,7 @@ class Notice1 extends EnemyBlobSequence {
         }
 
         /** @type {GameObject?} */
-        this.noticeSource = noticeSource;
+        this.source = noticeSource;
         this.timer = new Timer(5);
 
         this.addSimpleAction(() => {
@@ -271,12 +321,12 @@ class Notice1 extends EnemyBlobSequence {
 
         this.addSimpleAction(() => {
             // face in direction of notice source
-            if (this.noticeSource) {
-                this.enemyBlob.facePosition(this.noticeSource.pos);
+            if (this.source) {
+                this.enemyBlob.facePosition(this.source.pos);
             }
         }, rand(0.1, 0.2));
 
-        if (rand() > 0.0) {
+        if (rand() < 0.2) {
             // move towards target and study item for x seconds
             {
                 const action = new ActionHandler();
@@ -286,11 +336,11 @@ class Notice1 extends EnemyBlobSequence {
                     this.enemyBlob.tile("study");
                 };
                 action.isDone = () => {
-                    return this.timer.elapsed() || this.enemyBlob.pos.distance(this.noticeSource.pos) < 0.5;
+                    return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
                 };
                 action.do = () => {
-                    this.enemyBlob.facePosition(this.noticeSource.pos);
-                    this.enemyBlob.velocity.x = this.noticeSource.pos.subtract(this.enemyBlob.pos).normalize().x * 0.03;
+                    this.enemyBlob.facePosition(this.source.pos);
+                    this.enemyBlob.velocity.x = this.source.pos.subtract(this.enemyBlob.pos).normalize().x * 0.03;
                 }
                 this.add(action);
             }
@@ -298,23 +348,7 @@ class Notice1 extends EnemyBlobSequence {
             this.addSimpleAction(() => {
                 this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
             }, rand(2, 3));
-
-            this.addSimpleAction(() => {
-                this.shouldIdle = true;
-            });
-
-        } else {
-            // if grenade, run away for x seconds and alert comrades
-
-            // if (this.noticeSource instanceof Grenade) {
-            //     for (let i = 0; i < rand(3,4); i++) {
-            //         this.addSimpleAction(() => {
-            //             this.text = "GRENADE!";
-            //             enemyBlob.alertComrades();
-            //         }, 1);
-            //     }
-            // }
-        }
+        } 
     }
 
     /**
@@ -322,9 +356,13 @@ class Notice1 extends EnemyBlobSequence {
      */
     notice(noticeSource) {
         // we could modify it to notice something new if we wanted, but for now, just ignore
-        if (!this.noticeSource) {
-            this.noticeSource = noticeSource;
+        if (!this.source) {
+            this.source = noticeSource;
         }
+    }
+
+    isGrenade() {
+        return this.source instanceof Grenade;
     }
 
     do() {
@@ -332,6 +370,61 @@ class Notice1 extends EnemyBlobSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe(this.text);
+        this.enemyBlob.debugTextAboveMe(this.text);
+    }
+}
+
+
+class Dive1 extends EnemyBlobSequence {
+
+    /**
+     * @param {Enemy3} enemyBlob
+     * @param {GameObject} grenadeSource
+     */
+    constructor(enemyBlob, grenadeSource) {
+        const e = enemyBlob;
+        super(enemyBlob);
+        this.text = "";
+        this.grenadeSource = grenadeSource;
+
+        this.timer = new Timer(0);
+
+        {
+            const action = new ActionHandler();
+            action.enter = () => {
+                enemyBlob.tile("alarm");
+                this.timer.set();
+                e.angle = PI/2;
+                e.velocity.y = 0.1;
+                let xVel = 0.12;
+
+                if (e.pos.x < grenadeSource.pos.x) {
+                    xVel *= -1;
+                    e.mirror = true;
+                    e.angle *= -1;
+                }
+
+                // slow it down a bit if we are in the air (no friction)
+                if (!e.groundObject) {
+                    xVel *= 0.2;
+                }
+
+                e.velocity.x += xVel;
+            };
+            action.isDone = () => {
+                return this.timer.get() >= 3.0;
+            };
+            action.do = () => {
+                if (this.timer.get() < 1.0) {
+                    e.debugTextAboveMe("GRENADE!");
+                } else {
+                    e.tile("mortified");
+                }
+            }
+            action.exit = () => {
+                e.angle = 0;
+            }
+            this.add(action);
+        }
     }
 }
