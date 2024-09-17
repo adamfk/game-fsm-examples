@@ -13,11 +13,15 @@ class Enemy3 extends EnemyBlob
         /** The velocity we commanded last time before physics calculations */
         this.attemptedVelocity = vec2();
 
+        // todo_low - we could construct these only when we need them. We don't need them all at the same time.
         this.dance = new Dance1(this);
         this.waking = new Waking1(this);
         this.lulling = new Lulling1(this);
         this.surprised = new Surprised1(this);
         this.alarm = new Alarm1(this);
+
+        /** @type {Notice1?} */
+        this.notice = null;
 
         this.chargeTimer = new Timer();
         this.chargeMaxTime = 0.5;
@@ -41,6 +45,7 @@ class Enemy3 extends EnemyBlob
         this.updateStallCount();
 
         // run state machine
+        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.DO);
         this.debugTextBelowMe(Enemy3Sm.stateIdToString(this.sm.stateId));
 
@@ -71,7 +76,17 @@ class Enemy3 extends EnemyBlob
     }
 
     damageEvent() {
+        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.DAMAGED);
+    }
+
+    /**
+     * Override
+     * @param {EngineObject} objectToNotice
+     */
+    noticeEvent(objectToNotice) {
+        this.sm.vars.eventArg = objectToNotice;
+        this.sm.dispatchEvent(Enemy3Sm.EventId.NOTICE);
     }
 
     chargeExit() {
@@ -99,16 +114,16 @@ class Enemy3 extends EnemyBlob
     huntPlayer()
     {
         const vecToPlayer = this.normalVecToPlayer();
-
         this.walkOrJumpTowardsTarget(vecToPlayer);
     }
 
     alarmEvent() {
+        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.ALARM);
     }
 
     alertComrades(radius = 30) {
-        engineObjectsCallback(this.pos, radius, (o)=>
+        engineObjectsCallback(this.pos, radius, (/** @type {this} */ o)=>
         {
             if (o instanceof Enemy3 && o !== this) {
                 // console.log("alerting comrade", this, o);
@@ -118,11 +133,15 @@ class Enemy3 extends EnemyBlob
     }
 
     /**
-     * @param {Vector2} targetVec
+     * @param {Vector2} normalTargetVec
      */
-    walkOrJumpTowardsTarget(targetVec) {
+    walkOrJumpTowardsTarget(normalTargetVec) {
+        if (!normalTargetVec) {
+            return;
+        }
+
         if (!this.groundObject) {
-            this.velocity.x += targetVec.x * .001;
+            this.velocity.x += normalTargetVec.x * .001;
         }
 
         else {
@@ -131,12 +150,12 @@ class Enemy3 extends EnemyBlob
             // this.debugTextAboveMe("stall count " + this.stallFrameCount);
             // on ground. randomly jump towards player
             if (rand() < 0.01 + scaledStallCount) {
-                this.jumpTowards(targetVec, scaledStallCount);
+                this.jumpTowards(normalTargetVec, scaledStallCount);
             }
 
             else {
                 // if not jumping, march towards player
-                this.velocity = targetVec.multiply(vec2(.07, .0));
+                this.velocity = normalTargetVec.multiply(vec2(.07, .0));
             }
         }
     }

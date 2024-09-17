@@ -237,3 +237,101 @@ class Alarm1 extends EnemyBlobSequence {
         this.enemyBlob.walkOrJumpTowardsTarget(target);
     }
 }
+
+class Notice1 extends EnemyBlobSequence {
+
+    noticeTextOptions = ["huh?", "da heck?", "hmm?"];
+    curiousTextOptions = ["neat!", "I wonder..."];
+
+    /**
+     * @param {Enemy3} enemyBlob
+     * @param {GameObject} noticeSource
+     */
+    constructor(enemyBlob, noticeSource) {
+        super(enemyBlob);
+        this.enemyBlob = enemyBlob;
+        this.text = "";
+        this.shouldIdle = false;
+        this.shouldGrenadeDive = false;
+
+        // if no notice source, use player
+        if (!noticeSource || !noticeSource.pos) {
+            noticeSource = player;
+        }
+
+        /** @type {GameObject?} */
+        this.noticeSource = noticeSource;
+        this.timer = new Timer(5);
+
+        this.addSimpleAction(() => {
+            this.enemyBlob.swellSpeed = 5;
+            this.enemyBlob.tile("groggy");
+            this.text = "huh?";
+        }, rand(0.25,1));
+
+        this.addSimpleAction(() => {
+            // face in direction of notice source
+            if (this.noticeSource) {
+                this.enemyBlob.facePosition(this.noticeSource.pos);
+            }
+        }, rand(0.1, 0.2));
+
+        if (rand() > 0.0) {
+            // move towards target and study item for x seconds
+            {
+                const action = new ActionHandler();
+                action.enter = () => {
+                    this.timer.set(5);
+                    this.text = "I wonder...";
+                    this.enemyBlob.tile("study");
+                };
+                action.isDone = () => {
+                    return this.timer.elapsed() || this.enemyBlob.pos.distance(this.noticeSource.pos) < 0.5;
+                };
+                action.do = () => {
+                    this.enemyBlob.facePosition(this.noticeSource.pos);
+                    this.enemyBlob.velocity.x = this.noticeSource.pos.subtract(this.enemyBlob.pos).normalize().x * 0.03;
+                }
+                this.add(action);
+            }
+
+            this.addSimpleAction(() => {
+                this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
+            }, rand(2, 3));
+
+            this.addSimpleAction(() => {
+                this.shouldIdle = true;
+            });
+
+        } else {
+            // if grenade, run away for x seconds and alert comrades
+
+            // if (this.noticeSource instanceof Grenade) {
+            //     for (let i = 0; i < rand(3,4); i++) {
+            //         this.addSimpleAction(() => {
+            //             this.text = "GRENADE!";
+            //             enemyBlob.alertComrades();
+            //         }, 1);
+            //     }
+            // }
+        }
+    }
+
+    /**
+     * @param {GameObject} noticeSource
+     */
+    notice(noticeSource) {
+        // we could modify it to notice something new if we wanted, but for now, just ignore
+        if (!this.noticeSource) {
+            this.noticeSource = noticeSource;
+        }
+    }
+
+    do() {
+        if (this.isDone())
+            return;
+
+        super.do();
+        this.gameObject.debugTextAboveMe(this.text);
+    }
+}

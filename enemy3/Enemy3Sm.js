@@ -9,10 +9,11 @@ class Enemy3Sm
         DO : 0, // The `do` event is special. State event handlers do not consume this event (ancestors all get it too) unless a transition occurs.
         ALARM : 1,
         DAMAGED : 2,
+        NOTICE : 3,
     }
     static { Object.freeze(this.EventId); }
     
-    static EventIdCount = 3;
+    static EventIdCount = 4;
     static { Object.freeze(this.EventIdCount); }
     
     static StateId = 
@@ -25,19 +26,22 @@ class Enemy3Sm
         CHARGE_REST : 5,
         HUNT : 6,
         IDLE : 7,
-        CHECK_VISION : 8,
-        DANCE : 9,
-        FALLING_A_SLEEP : 10,
-        WAKING : 11,
-        SLEEPING : 12,
-        ABOUT_TO_STIR : 13,
-        DEEP_SLEEP : 14,
-        SURPRISED : 15,
-        SOUND_ALARM : 16,
+        GRENADE_DIVE : 8,
+        NON_AGRO : 9,
+        CHECK_VISION : 10,
+        DANCE : 11,
+        FALLING_A_SLEEP : 12,
+        WAKING : 13,
+        NOTICE_NOISE : 14,
+        SLEEPING : 15,
+        ABOUT_TO_STIR : 16,
+        DEEP_SLEEP : 17,
+        SURPRISED : 18,
+        SOUND_ALARM : 19,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 17;
+    static StateIdCount = 20;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -48,6 +52,7 @@ class Enemy3Sm
         timer: new Timer(0),
         /** @type{Enemy3|null} */
         e: null, // need to set this to instance of Enemy before calling start()
+        eventArg: null,
     };
     
     // Starts the state machine. Must be called before dispatching events. Not thread safe.
@@ -148,13 +153,32 @@ class Enemy3Sm
                 }
                 break;
             
+            // STATE: GRENADE_DIVE
+            case Enemy3Sm.StateId.GRENADE_DIVE:
+                switch (eventId)
+                {
+                    case Enemy3Sm.EventId.DO: this.#GRENADE_DIVE_do(); break;
+                    case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
+                }
+                break;
+            
+            // STATE: NON_AGRO
+            case Enemy3Sm.StateId.NON_AGRO:
+                switch (eventId)
+                {
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break;
+                    case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
+                }
+                break;
+            
             // STATE: CHECK_VISION
             case Enemy3Sm.StateId.CHECK_VISION:
                 switch (eventId)
                 {
-                    case Enemy3Sm.EventId.DAMAGED: this.#CHECK_VISION_damaged(); break;
                     case Enemy3Sm.EventId.DO: this.#CHECK_VISION_do(); break;
+                    case Enemy3Sm.EventId.NOTICE: this.#CHECK_VISION_notice(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -164,7 +188,8 @@ class Enemy3Sm
                 {
                     case Enemy3Sm.EventId.DO: this.#DANCE_do(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
-                    case Enemy3Sm.EventId.DAMAGED: this.#CHECK_VISION_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.NOTICE: this.#CHECK_VISION_notice(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -174,7 +199,8 @@ class Enemy3Sm
                 {
                     case Enemy3Sm.EventId.DO: this.#FALLING_A_SLEEP_do(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
-                    case Enemy3Sm.EventId.DAMAGED: this.#CHECK_VISION_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.NOTICE: this.#CHECK_VISION_notice(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -184,7 +210,19 @@ class Enemy3Sm
                 {
                     case Enemy3Sm.EventId.DO: this.#WAKING_do(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
-                    case Enemy3Sm.EventId.DAMAGED: this.#CHECK_VISION_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.NOTICE: this.#CHECK_VISION_notice(); break; // First ancestor handler for this event
+                }
+                break;
+            
+            // STATE: NOTICE_NOISE
+            case Enemy3Sm.StateId.NOTICE_NOISE:
+                switch (eventId)
+                {
+                    case Enemy3Sm.EventId.NOTICE: this.#NOTICE_NOISE_notice(); break;
+                    case Enemy3Sm.EventId.DO: this.#NOTICE_NOISE_do(); break;
+                    case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -193,8 +231,9 @@ class Enemy3Sm
                 switch (eventId)
                 {
                     case Enemy3Sm.EventId.DO: this.#SLEEPING_do(); break;
-                    case Enemy3Sm.EventId.DAMAGED: this.#SLEEPING_damaged(); break;
+                    case Enemy3Sm.EventId.NOTICE: this.#SLEEPING_notice(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -204,7 +243,8 @@ class Enemy3Sm
                 {
                     case Enemy3Sm.EventId.DO: this.#ABOUT_TO_STIR_do(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
-                    case Enemy3Sm.EventId.DAMAGED: this.#SLEEPING_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.NOTICE: this.#SLEEPING_notice(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -214,7 +254,8 @@ class Enemy3Sm
                 {
                     case Enemy3Sm.EventId.DO: this.#DEEP_SLEEP_do(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
-                    case Enemy3Sm.EventId.DAMAGED: this.#SLEEPING_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.DAMAGED: this.#NON_AGRO_damaged(); break; // First ancestor handler for this event
+                    case Enemy3Sm.EventId.NOTICE: this.#SLEEPING_notice(); break; // First ancestor handler for this event
                 }
                 break;
             
@@ -261,6 +302,10 @@ class Enemy3Sm
                 
                 case Enemy3Sm.StateId.IDLE: this.#IDLE_exit(); break;
                 
+                case Enemy3Sm.StateId.GRENADE_DIVE: this.#GRENADE_DIVE_exit(); break;
+                
+                case Enemy3Sm.StateId.NON_AGRO: this.#NON_AGRO_exit(); break;
+                
                 case Enemy3Sm.StateId.CHECK_VISION: this.#CHECK_VISION_exit(); break;
                 
                 case Enemy3Sm.StateId.DANCE: this.#DANCE_exit(); break;
@@ -268,6 +313,8 @@ class Enemy3Sm
                 case Enemy3Sm.StateId.FALLING_A_SLEEP: this.#FALLING_A_SLEEP_exit(); break;
                 
                 case Enemy3Sm.StateId.WAKING: this.#WAKING_exit(); break;
+                
+                case Enemy3Sm.StateId.NOTICE_NOISE: this.#NOTICE_NOISE_exit(); break;
                 
                 case Enemy3Sm.StateId.SLEEPING: this.#SLEEPING_exit(); break;
                 
@@ -801,50 +848,6 @@ rand() < 0.02)
         // No ancestor handles this event.
     }
     
-    #IDLE_InitialState_transition()
-    {
-        // IDLE.<InitialState> behavior
-        // uml: TransitionTo(CHECK_VISION.<ChoicePoint>())
-        {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `CHECK_VISION.<ChoicePoint>()`.
-            this.#CHECK_VISION_enter();
-            // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
-            
-            // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [rand() > 0.5] TransitionTo(FALLING_A_SLEEP)
-            if (rand() > 0.5)
-            {
-                // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
-                
-                // Step 2: Transition action: ``.
-                
-                // Step 3: Enter/move towards transition target `FALLING_A_SLEEP`.
-                this.#FALLING_A_SLEEP_enter();
-                
-                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-                return;
-            } // end of behavior for CHECK_VISION.<ChoicePoint>()
-            
-            // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: else TransitionTo(DANCE)
-            {
-                // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
-                
-                // Step 2: Transition action: ``.
-                
-                // Step 3: Enter/move towards transition target `DANCE`.
-                this.#DANCE_enter();
-                
-                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-                return;
-            } // end of behavior for CHECK_VISION.<ChoicePoint>()
-        } // end of behavior for IDLE.<InitialState>
-    }
-    
     #IDLE_ChoicePoint__transition()
     {
         // IDLE.<ChoicePoint>() behavior
@@ -910,6 +913,130 @@ rand() < 0.02)
         } // end of behavior for IDLE.<ExitPoint>(hunt)
     }
     
+    #IDLE_InitialState_transition()
+    {
+        // IDLE.<InitialState> behavior
+        // uml: TransitionTo(NON_AGRO)
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NON_AGRO`.
+            this.#NON_AGRO_enter();
+            
+            // NON_AGRO.<InitialState> behavior
+            // uml: TransitionTo(CHECK_VISION)
+            {
+                // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `CHECK_VISION`.
+                this.#CHECK_VISION_enter();
+                
+                // Finish transition by calling pseudo state transition function.
+                this.#CHECK_VISION_InitialState_transition();
+                return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+            } // end of behavior for NON_AGRO.<InitialState>
+        } // end of behavior for IDLE.<InitialState>
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state GRENADE_DIVE
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #GRENADE_DIVE_enter()
+    {
+        this.stateId = Enemy3Sm.StateId.GRENADE_DIVE;
+        
+        // GRENADE_DIVE behavior
+        // uml: enter / { e.dive.enter(); }
+        {
+            // Step 1: execute action `e.dive.enter();`
+            this.vars.e.dive.enter();
+        } // end of behavior for GRENADE_DIVE
+    }
+    
+    #GRENADE_DIVE_exit()
+    {
+        // GRENADE_DIVE behavior
+        // uml: exit / { e.dive.exit(); }
+        {
+            // Step 1: execute action `e.dive.exit();`
+            this.vars.e.dive.exit();
+        } // end of behavior for GRENADE_DIVE
+        
+        this.stateId = Enemy3Sm.StateId.IDLE;
+    }
+    
+    #GRENADE_DIVE_do()
+    {
+        // GRENADE_DIVE behavior
+        // uml: do / { e.dive.do(); }
+        {
+            // Step 1: execute action `e.dive.do();`
+            this.vars.e.dive.do();
+        } // end of behavior for GRENADE_DIVE
+        
+        // No ancestor handles this event.
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state NON_AGRO
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #NON_AGRO_enter()
+    {
+        this.stateId = Enemy3Sm.StateId.NON_AGRO;
+    }
+    
+    #NON_AGRO_exit()
+    {
+        this.stateId = Enemy3Sm.StateId.IDLE;
+    }
+    
+    #NON_AGRO_damaged()
+    {
+        // NON_AGRO behavior
+        // uml: DAMAGED TransitionTo(NON_AGRO.<ExitPoint>(surprised))
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(Enemy3Sm.StateId.NON_AGRO);
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NON_AGRO.<ExitPoint>(surprised)`.
+            // NON_AGRO.<ExitPoint>(surprised) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#NON_AGRO_ExitPoint_surprised__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for NON_AGRO
+        
+        // No ancestor handles this event.
+    }
+    
+    #NON_AGRO_ExitPoint_surprised__transition()
+    {
+        // NON_AGRO.<ExitPoint>(surprised) behavior
+        // uml: TransitionTo(SURPRISED)
+        {
+            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+            this.#NON_AGRO_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `SURPRISED`.
+            this.#SURPRISED_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for NON_AGRO.<ExitPoint>(surprised)
+    }
+    
     
     ////////////////////////////////////////////////////////////////////////////////
     // event handlers for state CHECK_VISION
@@ -922,48 +1049,92 @@ rand() < 0.02)
     
     #CHECK_VISION_exit()
     {
-        this.stateId = Enemy3Sm.StateId.IDLE;
-    }
-    
-    #CHECK_VISION_damaged()
-    {
-        // CHECK_VISION behavior
-        // uml: DAMAGED TransitionTo(SURPRISED)
-        {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(Enemy3Sm.StateId.IDLE);
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `SURPRISED`.
-            this.#SURPRISED_enter();
-            
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for CHECK_VISION
-        
-        // No ancestor handles this event.
+        this.stateId = Enemy3Sm.StateId.NON_AGRO;
     }
     
     #CHECK_VISION_do()
     {
         // CHECK_VISION behavior
-        // uml: do [e.canSeePlayer(6)] TransitionTo(SURPRISED)
+        // uml: do [e.canSeePlayer(6)] TransitionTo(NON_AGRO.<ExitPoint>(surprised))
         if (this.vars.e.canSeePlayer(6))
         {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(Enemy3Sm.StateId.IDLE);
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(Enemy3Sm.StateId.NON_AGRO);
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `SURPRISED`.
-            this.#SURPRISED_enter();
+            // Step 3: Enter/move towards transition target `NON_AGRO.<ExitPoint>(surprised)`.
+            // NON_AGRO.<ExitPoint>(surprised) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#NON_AGRO_ExitPoint_surprised__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for CHECK_VISION
+        
+        // No ancestor handles this event.
+    }
+    
+    #CHECK_VISION_notice()
+    {
+        // CHECK_VISION behavior
+        // uml: NOTICE TransitionTo(NOTICE_NOISE)
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(Enemy3Sm.StateId.NON_AGRO);
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NOTICE_NOISE`.
+            this.#NOTICE_NOISE_enter();
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
         } // end of behavior for CHECK_VISION
         
         // No ancestor handles this event.
+    }
+    
+    #CHECK_VISION_InitialState_transition()
+    {
+        // CHECK_VISION.<InitialState> behavior
+        // uml: TransitionTo(CHECK_VISION.<ChoicePoint>())
+        {
+            // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `CHECK_VISION.<ChoicePoint>()`.
+            // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
+            
+            // CHECK_VISION.<ChoicePoint>() behavior
+            // uml: [rand() > 0.5] TransitionTo(FALLING_A_SLEEP)
+            if (rand() > 0.5)
+            {
+                // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `FALLING_A_SLEEP`.
+                this.#FALLING_A_SLEEP_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                return;
+            } // end of behavior for CHECK_VISION.<ChoicePoint>()
+            
+            // CHECK_VISION.<ChoicePoint>() behavior
+            // uml: else TransitionTo(DANCE)
+            {
+                // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `DANCE`.
+                this.#DANCE_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                return;
+            } // end of behavior for CHECK_VISION.<ChoicePoint>()
+        } // end of behavior for CHECK_VISION.<InitialState>
     }
     
     
@@ -1070,8 +1241,8 @@ this.vars.e.dance.isDone())
         // uml: 1. do [e.lulling.isDone()] TransitionTo(SLEEPING)
         if (this.vars.e.lulling.isDone())
         {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(Enemy3Sm.StateId.IDLE);
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(Enemy3Sm.StateId.NON_AGRO);
             
             // Step 2: Transition action: ``.
             
@@ -1209,6 +1380,104 @@ rand() < 0.5)
     
     
     ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state NOTICE_NOISE
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #NOTICE_NOISE_enter()
+    {
+        this.stateId = Enemy3Sm.StateId.NOTICE_NOISE;
+        
+        // NOTICE_NOISE behavior
+        // uml: enter / { e.notice = new Notice1(e, eventArg); }
+        {
+            // Step 1: execute action `e.notice = new Notice1(e, eventArg);`
+            this.vars.e.notice = new Notice1(this.vars.e, this.vars.eventArg);
+        } // end of behavior for NOTICE_NOISE
+    }
+    
+    #NOTICE_NOISE_exit()
+    {
+        // NOTICE_NOISE behavior
+        // uml: exit / { e.notice.exit(); }
+        {
+            // Step 1: execute action `e.notice.exit();`
+            this.vars.e.notice.exit();
+        } // end of behavior for NOTICE_NOISE
+        
+        this.stateId = Enemy3Sm.StateId.NON_AGRO;
+    }
+    
+    #NOTICE_NOISE_do()
+    {
+        // NOTICE_NOISE behavior
+        // uml: do / { e.notice.do(); }
+        {
+            // Step 1: execute action `e.notice.do();`
+            this.vars.e.notice.do();
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: do [e.notice.shouldGrenadeDive] TransitionTo(NON_AGRO.<ExitPoint>(grenade_dive))
+        if (this.vars.e.notice.shouldGrenadeDive)
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#NOTICE_NOISE_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NON_AGRO.<ExitPoint>(grenade_dive)`.
+            // NON_AGRO.<ExitPoint>(grenade_dive) is a pseudo state and cannot have an `enter` trigger.
+            
+            // NON_AGRO.<ExitPoint>(grenade_dive) behavior
+            // uml: TransitionTo(GRENADE_DIVE)
+            {
+                // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+                this.#NON_AGRO_exit();
+                
+                // Step 2: Transition action: ``.
+                
+                // Step 3: Enter/move towards transition target `GRENADE_DIVE`.
+                this.#GRENADE_DIVE_enter();
+                
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                return;
+            } // end of behavior for NON_AGRO.<ExitPoint>(grenade_dive)
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: do [e.notice.shouldIdle] TransitionTo(CHECK_VISION)
+        if (this.vars.e.notice.shouldIdle)
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#NOTICE_NOISE_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `CHECK_VISION`.
+            this.#CHECK_VISION_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#CHECK_VISION_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for NOTICE_NOISE
+        
+        // No ancestor handles this event.
+    }
+    
+    #NOTICE_NOISE_notice()
+    {
+        // NOTICE_NOISE behavior
+        // uml: NOTICE / { e.notice.notice(eventArg); }
+        {
+            // Step 1: execute action `e.notice.notice(eventArg);`
+            this.vars.e.notice.notice(this.vars.eventArg);
+        } // end of behavior for NOTICE_NOISE
+        
+        // No ancestor handles this event.
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
     // event handlers for state SLEEPING
     ////////////////////////////////////////////////////////////////////////////////
     
@@ -1234,27 +1503,7 @@ rand() < 0.5)
             this.vars.e.disableAttack = false;
         } // end of behavior for SLEEPING
         
-        this.stateId = Enemy3Sm.StateId.IDLE;
-    }
-    
-    #SLEEPING_damaged()
-    {
-        // SLEEPING behavior
-        // uml: DAMAGED TransitionTo(SURPRISED)
-        {
-            // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
-            this.#exitUpToStateHandler(Enemy3Sm.StateId.IDLE);
-            
-            // Step 2: Transition action: ``.
-            
-            // Step 3: Enter/move towards transition target `SURPRISED`.
-            this.#SURPRISED_enter();
-            
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for SLEEPING
-        
-        // No ancestor handles this event.
+        this.stateId = Enemy3Sm.StateId.NON_AGRO;
     }
     
     #SLEEPING_do()
@@ -1263,6 +1512,26 @@ rand() < 0.5)
         // uml: do
         {
             // Step 1: execute action ``
+        } // end of behavior for SLEEPING
+        
+        // No ancestor handles this event.
+    }
+    
+    #SLEEPING_notice()
+    {
+        // SLEEPING behavior
+        // uml: NOTICE TransitionTo(NOTICE_NOISE)
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#exitUpToStateHandler(Enemy3Sm.StateId.NON_AGRO);
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NOTICE_NOISE`.
+            this.#NOTICE_NOISE_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
         } // end of behavior for SLEEPING
         
         // No ancestor handles this event.
@@ -1323,7 +1592,7 @@ rand() < 0.5)
             // SLEEPING.<ExitPoint>(1) behavior
             // uml: TransitionTo(WAKING)
             {
-                // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
+                // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
                 this.#SLEEPING_exit();
                 
                 // Step 2: Transition action: ``.
@@ -1566,10 +1835,13 @@ this.vars.e.playerDist() < 1)
             case Enemy3Sm.StateId.CHARGE_REST: return "CHARGE_REST";
             case Enemy3Sm.StateId.HUNT: return "HUNT";
             case Enemy3Sm.StateId.IDLE: return "IDLE";
+            case Enemy3Sm.StateId.GRENADE_DIVE: return "GRENADE_DIVE";
+            case Enemy3Sm.StateId.NON_AGRO: return "NON_AGRO";
             case Enemy3Sm.StateId.CHECK_VISION: return "CHECK_VISION";
             case Enemy3Sm.StateId.DANCE: return "DANCE";
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
+            case Enemy3Sm.StateId.NOTICE_NOISE: return "NOTICE_NOISE";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
             case Enemy3Sm.StateId.ABOUT_TO_STIR: return "ABOUT_TO_STIR";
             case Enemy3Sm.StateId.DEEP_SLEEP: return "DEEP_SLEEP";
@@ -1587,6 +1859,7 @@ this.vars.e.playerDist() < 1)
             case Enemy3Sm.EventId.ALARM: return "ALARM";
             case Enemy3Sm.EventId.DAMAGED: return "DAMAGED";
             case Enemy3Sm.EventId.DO: return "DO";
+            case Enemy3Sm.EventId.NOTICE: return "NOTICE";
             default: return "?";
         }
     }

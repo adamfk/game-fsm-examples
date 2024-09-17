@@ -98,6 +98,14 @@ class GameObject extends EngineObject
 
     }
 
+    /**
+     * @param {EngineObject} objectToNotice 
+     */
+    noticeEvent(objectToNotice)
+    {
+        console.log("notice event", this, objectToNotice);
+    }
+
     isDead()                { return !this.health; }
     
     /**
@@ -107,6 +115,20 @@ class GameObject extends EngineObject
 
     normalVecToPlayer() {
         return player.pos.subtract(this.pos).normalize();
+    }
+
+    /**
+     * @param {Vector2} pos
+     */
+    normalVecToPos(pos) {
+        return pos.subtract(this.pos).normalize();
+    }
+
+    /**
+     * @param {Vector2} pos
+     */
+    facePosition(pos) {
+        this.mirror = pos.x < this.pos.x;
     }
 
     /**
@@ -216,6 +238,7 @@ class Grenade extends GameObject
         super(pos, vec2(.2), spriteAtlas.grenade);
 
         this.beepTimer = new Timer(1);
+        this.noticeTimer = new Timer(0.5);
         this.elasticity   = .3;
         this.friction     = .9;
         this.angleDamping = .96;
@@ -229,13 +252,35 @@ class Grenade extends GameObject
 
         if (this.getAliveTime() > 3)
         {
+            engineObjectsCallback(this.pos, 12, (o)=> 
+                {
+                    if (o instanceof Enemy) {
+                        o.noticeEvent(this);
+                    }
+                });
+                
             explosion(this.pos);
             this.destroy();
         }
-        else if (this.beepTimer.elapsed())
+        else
         {
-            sound_grenade.play(this.pos)
-            this.beepTimer.set(1);
+            if (this.beepTimer.elapsed())
+            {
+                sound_grenade.play(this.pos)
+                this.beepTimer.set(1);
+            }
+
+            if (this.noticeTimer.elapsed())
+            {
+                this.noticeTimer.set(0.5);
+
+                engineObjectsCallback(this.pos, 6, (o)=> 
+                {
+                    if (o instanceof Enemy) {
+                        o.noticeEvent(this);
+                    }
+                });
+            }
         }
     }
        
@@ -381,8 +426,8 @@ class Bullet extends EngineObject
     }
     
     notifyShotSound() {
-        engineObjectsCallback(this.pos, 6, (/** @type {{ isGameObject: any; heardShot: (arg0: Vector2) => void; }} */ o) => {
-            if (o.isGameObject)
+        engineObjectsCallback(this.pos, 6, (o) => {
+            if (o instanceof GameObject)
                 o.heardShot(this.pos);
         });
     }
@@ -406,14 +451,14 @@ class Bullet extends EngineObject
     collideWithTile(data, pos)
     {
         if (data <= 0)
-            return 0;
+            return false;
         
         if (stadiumDamage) {
             destroyTile(pos);
         }
 
         this.kill();
-        return 1; 
+        return true;
     }
 
     kill()

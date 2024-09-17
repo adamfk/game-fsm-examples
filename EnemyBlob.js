@@ -1,7 +1,7 @@
 'use strict';
 
 class EnemyBlob extends Enemy {
-    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6, alarm: 7 };
+    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6, alarm: 7, study: 8, mortified: 9 };
 
     static baseTileIndex = 6;
 
@@ -28,7 +28,7 @@ class EnemyBlob extends Enemy {
         this.disableAttack = false;
 
         /**
-         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"}
+         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"}
          */
         this.tileName = "sleeping";
     }
@@ -143,7 +143,7 @@ class EnemyBlob extends Enemy {
     }
 
     /**
-     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"} tileName
+     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"} tileName
      */
     tile(tileName) {
         this.tileName = tileName;
