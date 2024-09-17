@@ -324,7 +324,7 @@ class Notice1 extends EnemyBlobSequence {
             if (this.source) {
                 this.enemyBlob.facePosition(this.source.pos);
             }
-        }, rand(0.1, 0.2));
+        }, rand(0.1, 1));
 
         if (rand() < 0.2) {
             // move towards target and study item for x seconds
@@ -386,6 +386,7 @@ class Dive1 extends EnemyBlobSequence {
         super(enemyBlob);
         this.text = "";
         this.grenadeSource = grenadeSource;
+        this.crawlSpeed = rand(0.002, 0.005);
 
         this.timer = new Timer(0);
 
@@ -395,8 +396,8 @@ class Dive1 extends EnemyBlobSequence {
                 enemyBlob.tile("alarm");
                 this.timer.set();
                 e.angle = PI/2;
-                e.velocity.y = 0.1;
-                let xVel = 0.12;
+                e.velocity.y = rand(0.1, 0.2);
+                let xVel = rand(0.1, 0.2);
 
                 if (e.pos.x < grenadeSource.pos.x) {
                     xVel *= -1;
@@ -404,15 +405,18 @@ class Dive1 extends EnemyBlobSequence {
                     e.angle *= -1;
                 }
 
-                // slow it down a bit if we are in the air (no friction)
-                if (!e.groundObject) {
-                    xVel *= 0.2;
-                }
+                // Slow it down a bit if we are in the air (no friction)
+                // Unfortunately, LittleJS platformer bug (?) makes blob randomly look like it is in the air.
+                // Maybe due to the swelling animation?
+                // if (!e.groundObject) {
+                //     xVel *= 0.2;
+                // }
 
                 e.velocity.x += xVel;
             };
             action.isDone = () => {
-                return this.timer.get() >= 3.0;
+                const elapsedTime = this.timer.get();
+                return elapsedTime >= 2.5 || grenadeSource.destroyed;
             };
             action.do = () => {
                 if (this.timer.get() < 1.0) {
@@ -420,11 +424,28 @@ class Dive1 extends EnemyBlobSequence {
                 } else {
                     e.tile("mortified");
                 }
-            }
-            action.exit = () => {
-                e.angle = 0;
+
+                // crawl away from grenade
+                if (e.groundObject) {
+                    let xVel = this.crawlSpeed;
+                    
+                    if (e.pos.x < grenadeSource.pos.x) {
+                        xVel *= -1;
+                    }
+                    e.velocity.x += xVel;
+                }
             }
             this.add(action);
         }
+
+        // rest post dive
+        this.addSimpleAction(() => {
+            e.tile("sleeping");
+        }, rand(0.25, 0.75));
+    }
+
+    exit() {
+        this.enemyBlob.angle = 0; // just to make sure
+        super.exit();
     }
 }

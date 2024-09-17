@@ -54,8 +54,6 @@ class Enemy3 extends EnemyBlob
         this.attemptedVelocity = this.velocity.copy();
     }
 
-
-
     damageEvent() {
         this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.DAMAGED);
