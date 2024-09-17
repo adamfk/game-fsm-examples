@@ -368,29 +368,31 @@ state IDLE {
 
                 NOTICE_NOISE : enter / #123; e.notice = new Notice1(e, eventArg)#59; #125;
 
+                NOTICE_NOISE : enter / #123; e.notice.enter()#59; #125;
+
                 NOTICE_NOISE : NOTICE / #123; e.notice.notice(eventArg)#59; #125;
 
                 NOTICE_NOISE : do / #123; e.notice.do()#59; #125;
 
                 NOTICE_NOISE : exit / #123; e.notice.exit()#59; #125;
 
-                state NON_AGRO.(ChoicePoint)() <<choice>>
-
-                IDLE__GRENADE_DIVE
-
-                IDLE__GRENADE_DIVE : IDLE__GRENADE_DIVE
-
-                IDLE__GRENADE_DIVE : enter / #123; e.dive = new Dive1(e, e.notice.source)#59; #125;
-
-                IDLE__GRENADE_DIVE : enter / #123; e.dive.enter()#59; #125;
-
-                IDLE__GRENADE_DIVE : do / #123; e.dive.do()#59; #125;
-
-                IDLE__GRENADE_DIVE : DAMAGED / #123;  #125;
-
-                IDLE__GRENADE_DIVE : exit / #123; e.dive.exit()#59; #125;
-
                 state "$exit_pt.skip_suprised" as NON_AGRO.(ExitPoint)(skip_suprised)
+
+                GRENADE_DIVE
+
+                GRENADE_DIVE : GRENADE_DIVE
+
+                GRENADE_DIVE : enter / #123; e.dive = new Dive1(e, e.notice.source)#59; #125;
+
+                GRENADE_DIVE : enter / #123; e.dive.enter()#59; #125;
+
+                GRENADE_DIVE : do / #123; e.dive.do()#59; #125;
+
+                GRENADE_DIVE : DAMAGED / #123;  #125;
+
+                GRENADE_DIVE : exit / #123; e.dive.exit()#59; #125;
+
+                state NON_AGRO.(ChoicePoint)() <<choice>>
 
         }
 
@@ -412,21 +414,21 @@ SOUND_ALARM : do / #123; e.alarm.do()#59; #125;
 
 SOUND_ALARM : exit / #123; e.alarm.exit()#59; #125;
 
-Enemy3Sm__GRENADE_DIVE
+HUNT_GRENADE_DIVE
 
-Enemy3Sm__GRENADE_DIVE : Enemy3Sm__GRENADE_DIVE
+HUNT_GRENADE_DIVE : HUNT_GRENADE_DIVE
 
-Enemy3Sm__GRENADE_DIVE : enter / #123; e.dive = new Dive1(e, eventArg)#59; #125;
+HUNT_GRENADE_DIVE : enter / #123; e.dive = new Dive1(e, eventArg)#59; #125;
 
-Enemy3Sm__GRENADE_DIVE : enter / #123; e.dive.enter()#59; #125;
+HUNT_GRENADE_DIVE : enter / #123; e.dive.enter()#59; #125;
 
-Enemy3Sm__GRENADE_DIVE : do / #123; e.dive.do()#59; #125;
+HUNT_GRENADE_DIVE : do / #123; e.dive.do()#59; #125;
 
-Enemy3Sm__GRENADE_DIVE : DAMAGED / #123;  #125;
+HUNT_GRENADE_DIVE : DAMAGED / #123;  #125;
 
-Enemy3Sm__GRENADE_DIVE : exit / #123; e.dive.exit()#59; #125;
+HUNT_GRENADE_DIVE : exit / #123; e.dive.exit()#59; #125;
 
-HUNTING --> Enemy3Sm__GRENADE_DIVE : NOTICE [eventArg instanceof Grenade &&e.groundObject]
+HUNTING --> HUNT_GRENADE_DIVE : NOTICE [eventArg instanceof Grenade &&e.groundObject]
 
 HUNTING --> HUNTING.(ExitPoint)(idle) : do [timer.elapsed()]
 
@@ -500,13 +502,15 @@ NON_AGRO.(ExitPoint)(surprised) --> SURPRISED
 
 NOTICE_NOISE --> NON_AGRO.(ChoicePoint)() : do [e.notice.isDone()]
 
-NON_AGRO.(ChoicePoint)() --> IDLE__GRENADE_DIVE : [e.notice.isGrenade()]
-
-NON_AGRO.(ChoicePoint)() --> CHECK_VISION : else
-
-IDLE__GRENADE_DIVE --> NON_AGRO.(ExitPoint)(skip_suprised) : do [e.dive.isDone()]
+NOTICE_NOISE --> NON_AGRO.(ExitPoint)(surprised) : NOTICE [eventArg instanceof Bullet]
 
 NON_AGRO.(ExitPoint)(skip_suprised) --> IDLE.(ChoicePoint)()
+
+GRENADE_DIVE --> NON_AGRO.(ExitPoint)(skip_suprised) : do [e.dive.isDone()]
+
+NON_AGRO.(ChoicePoint)() --> GRENADE_DIVE : [e.notice.isGrenade()]
+
+NON_AGRO.(ChoicePoint)() --> CHECK_VISION : else
 
 IDLE.(InitialState) --> NON_AGRO
 
@@ -514,7 +518,7 @@ ROOT.(InitialState) --> IDLE
 
 SOUND_ALARM --> HUNTING : do [e.alarm.isDone()]
 
-Enemy3Sm__GRENADE_DIVE --> HUNTING : do [e.dive.isDone()]
+HUNT_GRENADE_DIVE --> HUNTING : do [e.dive.isDone()]
 
 
 
@@ -573,7 +577,7 @@ evaluateGuard = null;
     {
         ROOT : 0,
         ENEMY_WIN : 1,
-        ENEMY3SM__GRENADE_DIVE : 2,
+        HUNT_GRENADE_DIVE : 2,
         HUNTING : 3,
         CALL_FOR_BACKUP : 4,
         CHARGE : 5,
@@ -584,7 +588,7 @@ evaluateGuard = null;
         DANCE : 10,
         FALLING_A_SLEEP : 11,
         WAKING : 12,
-        IDLE__GRENADE_DIVE : 13,
+        GRENADE_DIVE : 13,
         NOTICE_NOISE : 14,
         SLEEPING : 15,
         ABOUT_TO_STIR : 16,
@@ -615,12 +619,12 @@ evaluateGuard = null;
             // ROOT.<InitialState> is a pseudo state and cannot have an `enter` trigger.
             
             // ROOT.<InitialState> behavior
-            // uml: / { this.tracer?.edgeTransition("edge42"); } TransitionTo(IDLE)
+            // uml: / { this.tracer?.edgeTransition("edge43"); } TransitionTo(IDLE)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge42");`.
-                this.tracer?.edgeTransition("edge42");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge43");`.
+                this.tracer?.edgeTransition("edge43");
                 
                 // Step 3: Enter/move towards transition target `IDLE`.
                 this.#IDLE_enter();
@@ -651,12 +655,12 @@ evaluateGuard = null;
                 }
                 break;
             
-            // STATE: Enemy3Sm__GRENADE_DIVE
-            case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE:
+            // STATE: HUNT_GRENADE_DIVE
+            case Enemy3Sm.StateId.HUNT_GRENADE_DIVE:
                 switch (eventId)
                 {
-                    case Enemy3Sm.EventId.DO: this.#ENEMY3SM__GRENADE_DIVE_do(); break;
-                    case Enemy3Sm.EventId.DAMAGED: this.#ENEMY3SM__GRENADE_DIVE_damaged(); break;
+                    case Enemy3Sm.EventId.DO: this.#HUNT_GRENADE_DIVE_do(); break;
+                    case Enemy3Sm.EventId.DAMAGED: this.#HUNT_GRENADE_DIVE_damaged(); break;
                 }
                 break;
             
@@ -757,12 +761,12 @@ evaluateGuard = null;
                 }
                 break;
             
-            // STATE: IDLE__GRENADE_DIVE
-            case Enemy3Sm.StateId.IDLE__GRENADE_DIVE:
+            // STATE: GRENADE_DIVE
+            case Enemy3Sm.StateId.GRENADE_DIVE:
                 switch (eventId)
                 {
-                    case Enemy3Sm.EventId.DO: this.#IDLE__GRENADE_DIVE_do(); break;
-                    case Enemy3Sm.EventId.DAMAGED: this.#IDLE__GRENADE_DIVE_damaged(); break;
+                    case Enemy3Sm.EventId.DO: this.#GRENADE_DIVE_do(); break;
+                    case Enemy3Sm.EventId.DAMAGED: this.#GRENADE_DIVE_damaged(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
                 }
                 break;
@@ -842,7 +846,7 @@ evaluateGuard = null;
             {
                 case Enemy3Sm.StateId.ENEMY_WIN: this.#ENEMY_WIN_exit(); break;
                 
-                case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE: this.#ENEMY3SM__GRENADE_DIVE_exit(); break;
+                case Enemy3Sm.StateId.HUNT_GRENADE_DIVE: this.#HUNT_GRENADE_DIVE_exit(); break;
                 
                 case Enemy3Sm.StateId.HUNTING: this.#HUNTING_exit(); break;
                 
@@ -864,7 +868,7 @@ evaluateGuard = null;
                 
                 case Enemy3Sm.StateId.WAKING: this.#WAKING_exit(); break;
                 
-                case Enemy3Sm.StateId.IDLE__GRENADE_DIVE: this.#IDLE__GRENADE_DIVE_exit(); break;
+                case Enemy3Sm.StateId.GRENADE_DIVE: this.#GRENADE_DIVE_exit(); break;
                 
                 case Enemy3Sm.StateId.NOTICE_NOISE: this.#NOTICE_NOISE_exit(); break;
                 
@@ -968,83 +972,83 @@ evaluateGuard = null;
     
     
     ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state ENEMY3SM__GRENADE_DIVE
+    // event handlers for state HUNT_GRENADE_DIVE
     ////////////////////////////////////////////////////////////////////////////////
     
-    #ENEMY3SM__GRENADE_DIVE_enter()
+    #HUNT_GRENADE_DIVE_enter()
     {
-        this.stateId = Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE;
+        this.stateId = Enemy3Sm.StateId.HUNT_GRENADE_DIVE;
         
-        // Enemy3Sm__GRENADE_DIVE behavior
-        // uml: enter / { this.tracer?.enterState('Enemy3Sm__GRENADE_DIVE'); }
+        // HUNT_GRENADE_DIVE behavior
+        // uml: enter / { this.tracer?.enterState('HUNT_GRENADE_DIVE'); }
         {
-            // Step 1: execute action `this.tracer?.enterState('Enemy3Sm__GRENADE_DIVE');`
-            this.tracer?.enterState('Enemy3Sm__GRENADE_DIVE');
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+            // Step 1: execute action `this.tracer?.enterState('HUNT_GRENADE_DIVE');`
+            this.tracer?.enterState('HUNT_GRENADE_DIVE');
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, eventArg);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, eventArg);");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, eventArg);");
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();");
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
     }
     
-    #ENEMY3SM__GRENADE_DIVE_exit()
+    #HUNT_GRENADE_DIVE_exit()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();");
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
-        // uml: exit / { this.tracer?.exitState('Enemy3Sm__GRENADE_DIVE'); }
+        // HUNT_GRENADE_DIVE behavior
+        // uml: exit / { this.tracer?.exitState('HUNT_GRENADE_DIVE'); }
         {
-            // Step 1: execute action `this.tracer?.exitState('Enemy3Sm__GRENADE_DIVE');`
-            this.tracer?.exitState('Enemy3Sm__GRENADE_DIVE');
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+            // Step 1: execute action `this.tracer?.exitState('HUNT_GRENADE_DIVE');`
+            this.tracer?.exitState('HUNT_GRENADE_DIVE');
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         this.stateId = Enemy3Sm.StateId.ROOT;
     }
     
-    #ENEMY3SM__GRENADE_DIVE_damaged()
+    #HUNT_GRENADE_DIVE_damaged()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: DAMAGED
         {
             // Step 1: execute action ``
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         // No ancestor handles this event.
     }
     
-    #ENEMY3SM__GRENADE_DIVE_do()
+    #HUNT_GRENADE_DIVE_do()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: do / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();");
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("Enemy3Sm__GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(HUNTING)")] / { this.tracer?.edgeTransition("edge44"); } TransitionTo(HUNTING)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("Enemy3Sm__GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(HUNTING)"))
+        // HUNT_GRENADE_DIVE behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("HUNT_GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(HUNTING)")] / { this.tracer?.edgeTransition("edge45"); } TransitionTo(HUNTING)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("HUNT_GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(HUNTING)"))
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#ENEMY3SM__GRENADE_DIVE_exit();
+            this.#HUNT_GRENADE_DIVE_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge44");`.
-            this.tracer?.edgeTransition("edge44");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge45");`.
+            this.tracer?.edgeTransition("edge45");
             
             // Step 3: Enter/move towards transition target `HUNTING`.
             this.#HUNTING_enter();
@@ -1052,7 +1056,7 @@ evaluateGuard = null;
             // Finish transition by calling pseudo state transition function.
             this.#HUNTING_InitialState_transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         // No ancestor handles this event.
     }
@@ -1183,8 +1187,8 @@ evaluateGuard = null;
     #HUNTING_notice()
     {
         // HUNTING behavior
-        // uml: NOTICE [this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Grenade &&e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(Enemy3Sm__GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge0"); } TransitionTo(Enemy3Sm__GRENADE_DIVE)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Grenade &&e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(Enemy3Sm__GRENADE_DIVE)"))
+        // uml: NOTICE [this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Grenade &&e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(HUNT_GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge0"); } TransitionTo(HUNT_GRENADE_DIVE)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Grenade &&e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(HUNT_GRENADE_DIVE)"))
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(Enemy3Sm.StateId.ROOT);
@@ -1192,8 +1196,8 @@ evaluateGuard = null;
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge0");`.
             this.tracer?.edgeTransition("edge0");
             
-            // Step 3: Enter/move towards transition target `Enemy3Sm__GRENADE_DIVE`.
-            this.#ENEMY3SM__GRENADE_DIVE_enter();
+            // Step 3: Enter/move towards transition target `HUNT_GRENADE_DIVE`.
+            this.#HUNT_GRENADE_DIVE_enter();
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
@@ -1609,12 +1613,12 @@ evaluateGuard = null;
     #IDLE_InitialState_transition()
     {
         // IDLE.<InitialState> behavior
-        // uml: / { this.tracer?.edgeTransition("edge41"); } TransitionTo(NON_AGRO)
+        // uml: / { this.tracer?.edgeTransition("edge42"); } TransitionTo(NON_AGRO)
         {
             // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge41");`.
-            this.tracer?.edgeTransition("edge41");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge42");`.
+            this.tracer?.edgeTransition("edge42");
             
             // Step 3: Enter/move towards transition target `NON_AGRO`.
             this.#NON_AGRO_enter();
@@ -2113,65 +2117,65 @@ evaluateGuard = null;
     
     
     ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state IDLE__GRENADE_DIVE
+    // event handlers for state GRENADE_DIVE
     ////////////////////////////////////////////////////////////////////////////////
     
-    #IDLE__GRENADE_DIVE_enter()
+    #GRENADE_DIVE_enter()
     {
-        this.stateId = Enemy3Sm.StateId.IDLE__GRENADE_DIVE;
+        this.stateId = Enemy3Sm.StateId.GRENADE_DIVE;
         
-        // IDLE__GRENADE_DIVE behavior
-        // uml: enter / { this.tracer?.enterState('IDLE__GRENADE_DIVE'); }
+        // GRENADE_DIVE behavior
+        // uml: enter / { this.tracer?.enterState('GRENADE_DIVE'); }
         {
-            // Step 1: execute action `this.tracer?.enterState('IDLE__GRENADE_DIVE');`
-            this.tracer?.enterState('IDLE__GRENADE_DIVE');
-        } // end of behavior for IDLE__GRENADE_DIVE
+            // Step 1: execute action `this.tracer?.enterState('GRENADE_DIVE');`
+            this.tracer?.enterState('GRENADE_DIVE');
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, e.notice.source);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, e.notice.source);");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive = new Dive1(e, e.notice.source);");
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.enter();");
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
     }
     
-    #IDLE__GRENADE_DIVE_exit()
+    #GRENADE_DIVE_exit()
     {
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.exit();");
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
-        // uml: exit / { this.tracer?.exitState('IDLE__GRENADE_DIVE'); }
+        // GRENADE_DIVE behavior
+        // uml: exit / { this.tracer?.exitState('GRENADE_DIVE'); }
         {
-            // Step 1: execute action `this.tracer?.exitState('IDLE__GRENADE_DIVE');`
-            this.tracer?.exitState('IDLE__GRENADE_DIVE');
-        } // end of behavior for IDLE__GRENADE_DIVE
+            // Step 1: execute action `this.tracer?.exitState('GRENADE_DIVE');`
+            this.tracer?.exitState('GRENADE_DIVE');
+        } // end of behavior for GRENADE_DIVE
         
         this.stateId = Enemy3Sm.StateId.NON_AGRO;
     }
     
-    #IDLE__GRENADE_DIVE_damaged()
+    #GRENADE_DIVE_damaged()
     {
         let consume_event = false;
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: DAMAGED
         {
             // Consume event `damaged`.
             consume_event = true;
             // Step 1: execute action ``
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
         // Check if event has been consumed before calling ancestor handler.
         if (!consume_event)
@@ -2180,21 +2184,21 @@ evaluateGuard = null;
         }
     }
     
-    #IDLE__GRENADE_DIVE_do()
+    #GRENADE_DIVE_do()
     {
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: do / { this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.dive.do();");
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("IDLE__GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("IDLE__GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))"))
+        // GRENADE_DIVE behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.dive.isDone()") || this.evaluateGuard("GRENADE_DIVE","do [e.dive.isDone()] TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))"))
         {
             // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
-            this.#IDLE__GRENADE_DIVE_exit();
+            this.#GRENADE_DIVE_exit();
             
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge39");`.
             this.tracer?.edgeTransition("edge39");
@@ -2203,13 +2207,13 @@ evaluateGuard = null;
             // NON_AGRO.<ExitPoint>(skip_suprised) is a pseudo state and cannot have an `enter` trigger.
             
             // NON_AGRO.<ExitPoint>(skip_suprised) behavior
-            // uml: / { this.tracer?.edgeTransition("edge40"); } TransitionTo(IDLE.<ChoicePoint>())
+            // uml: / { this.tracer?.edgeTransition("edge38"); } TransitionTo(IDLE.<ChoicePoint>())
             {
                 // Step 1: Exit states until we reach `IDLE` state (Least Common Ancestor for transition).
                 this.#NON_AGRO_exit();
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge40");`.
-                this.tracer?.edgeTransition("edge40");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge38");`.
+                this.tracer?.edgeTransition("edge38");
                 
                 // Step 3: Enter/move towards transition target `IDLE.<ChoicePoint>()`.
                 // IDLE.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
@@ -2218,7 +2222,7 @@ evaluateGuard = null;
                 this.#IDLE_ChoicePoint__transition();
                 return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
             } // end of behavior for NON_AGRO.<ExitPoint>(skip_suprised)
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
         // No ancestor handles this event.
     }
@@ -2244,6 +2248,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.notice = new Notice1(e, eventArg);");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.notice = new Notice1(e, eventArg);");
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "e.notice.enter();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.notice.enter();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "e.notice.enter();");
         } // end of behavior for NOTICE_NOISE
     }
     
@@ -2289,28 +2300,28 @@ evaluateGuard = null;
             // NON_AGRO.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // NON_AGRO.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.notice.isGrenade()") || this.evaluateGuard("NON_AGRO.<ChoicePoint>()","[e.notice.isGrenade()] TransitionTo(IDLE__GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge37"); } TransitionTo(IDLE__GRENADE_DIVE)
-            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.notice.isGrenade()") || this.evaluateGuard("NON_AGRO.<ChoicePoint>()","[e.notice.isGrenade()] TransitionTo(IDLE__GRENADE_DIVE)"))
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.notice.isGrenade()") || this.evaluateGuard("NON_AGRO.<ChoicePoint>()","[e.notice.isGrenade()] TransitionTo(GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge40"); } TransitionTo(GRENADE_DIVE)
+            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.notice.isGrenade()") || this.evaluateGuard("NON_AGRO.<ChoicePoint>()","[e.notice.isGrenade()] TransitionTo(GRENADE_DIVE)"))
             {
                 // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge37");`.
-                this.tracer?.edgeTransition("edge37");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge40");`.
+                this.tracer?.edgeTransition("edge40");
                 
-                // Step 3: Enter/move towards transition target `IDLE__GRENADE_DIVE`.
-                this.#IDLE__GRENADE_DIVE_enter();
+                // Step 3: Enter/move towards transition target `GRENADE_DIVE`.
+                this.#GRENADE_DIVE_enter();
                 
                 // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
                 return;
             } // end of behavior for NON_AGRO.<ChoicePoint>()
             
             // NON_AGRO.<ChoicePoint>() behavior
-            // uml: else / { this.tracer?.edgeTransition("edge38"); } TransitionTo(CHECK_VISION)
+            // uml: else / { this.tracer?.edgeTransition("edge41"); } TransitionTo(CHECK_VISION)
             {
                 // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge38");`.
-                this.tracer?.edgeTransition("edge38");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge41");`.
+                this.tracer?.edgeTransition("edge41");
                 
                 // Step 3: Enter/move towards transition target `CHECK_VISION`.
                 this.#CHECK_VISION_enter();
@@ -2331,6 +2342,24 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "e.notice.notice(eventArg);");`
             this.tracer?.log("⚡ FSM would execute action: " + "e.notice.notice(eventArg);");
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: NOTICE [this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Bullet") || this.evaluateGuard("NOTICE_NOISE","NOTICE [eventArg instanceof Bullet] TransitionTo(NON_AGRO.<ExitPoint>(surprised))")] / { this.tracer?.edgeTransition("edge37"); } TransitionTo(NON_AGRO.<ExitPoint>(surprised))
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "eventArg instanceof Bullet") || this.evaluateGuard("NOTICE_NOISE","NOTICE [eventArg instanceof Bullet] TransitionTo(NON_AGRO.<ExitPoint>(surprised))"))
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#NOTICE_NOISE_exit();
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge37");`.
+            this.tracer?.edgeTransition("edge37");
+            
+            // Step 3: Enter/move towards transition target `NON_AGRO.<ExitPoint>(surprised)`.
+            // NON_AGRO.<ExitPoint>(surprised) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#NON_AGRO_ExitPoint_surprised__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for NOTICE_NOISE
         
         // No ancestor handles this event.
@@ -2736,14 +2765,14 @@ evaluateGuard = null;
         } // end of behavior for SOUND_ALARM
         
         // SOUND_ALARM behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("SOUND_ALARM","do [e.alarm.isDone()] TransitionTo(HUNTING)")] / { this.tracer?.edgeTransition("edge43"); } TransitionTo(HUNTING)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("SOUND_ALARM","do [e.alarm.isDone()] TransitionTo(HUNTING)")] / { this.tracer?.edgeTransition("edge44"); } TransitionTo(HUNTING)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("SOUND_ALARM","do [e.alarm.isDone()] TransitionTo(HUNTING)"))
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#SOUND_ALARM_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge43");`.
-            this.tracer?.edgeTransition("edge43");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge44");`.
+            this.tracer?.edgeTransition("edge44");
             
             // Step 3: Enter/move towards transition target `HUNTING`.
             this.#HUNTING_enter();
@@ -2763,7 +2792,7 @@ evaluateGuard = null;
         {
             case Enemy3Sm.StateId.ROOT: return "ROOT";
             case Enemy3Sm.StateId.ENEMY_WIN: return "ENEMY_WIN";
-            case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE: return "ENEMY3SM__GRENADE_DIVE";
+            case Enemy3Sm.StateId.HUNT_GRENADE_DIVE: return "HUNT_GRENADE_DIVE";
             case Enemy3Sm.StateId.HUNTING: return "HUNTING";
             case Enemy3Sm.StateId.CALL_FOR_BACKUP: return "CALL_FOR_BACKUP";
             case Enemy3Sm.StateId.CHARGE: return "CHARGE";
@@ -2774,7 +2803,7 @@ evaluateGuard = null;
             case Enemy3Sm.StateId.DANCE: return "DANCE";
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
-            case Enemy3Sm.StateId.IDLE__GRENADE_DIVE: return "IDLE__GRENADE_DIVE";
+            case Enemy3Sm.StateId.GRENADE_DIVE: return "GRENADE_DIVE";
             case Enemy3Sm.StateId.NOTICE_NOISE: return "NOTICE_NOISE";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
             case Enemy3Sm.StateId.ABOUT_TO_STIR: return "ABOUT_TO_STIR";

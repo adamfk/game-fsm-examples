@@ -317,38 +317,47 @@ class Notice1 extends EnemyBlobSequence {
             this.enemyBlob.swellSpeed = 5;
             this.enemyBlob.tile("groggy");
             this.text = "huh?";
-        }, rand(0.25,1));
+        }, rand(0.25, 1));
 
         this.addSimpleAction(() => {
             // face in direction of notice source
             if (this.source) {
                 this.enemyBlob.facePosition(this.source.pos);
             }
-        }, rand(0.1, 1));
+        }, rand(0.2, 0.8));
 
-        if (rand() < 0.2) {
-            // move towards target and study item for x seconds
+        if (this.source instanceof Grenade) {
+            if (rand() < 0.25)
             {
-                const action = new ActionHandler();
-                action.enter = () => {
-                    this.timer.set(5);
-                    this.text = "I wonder...";
-                    this.enemyBlob.tile("study");
-                };
-                action.isDone = () => {
-                    return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
-                };
-                action.do = () => {
-                    this.enemyBlob.facePosition(this.source.pos);
-                    this.enemyBlob.velocity.x = this.source.pos.subtract(this.enemyBlob.pos).normalize().x * 0.03;
+                // move towards target and study item for x seconds
+                {
+                    const action = new ActionHandler();
+                    action.enter = () => {
+                        this.timer.set(5);
+                        this.text = "I wonder...";
+                        this.enemyBlob.tile("study");
+                    };
+                    action.isDone = () => {
+                        return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
+                    };
+                    action.do = () => {
+                        this.enemyBlob.facePosition(this.source.pos);
+                        this.enemyBlob.velocity.x = this.enemyBlob.normalVecToPos(this.source.pos).x * 0.03;
+                    }
+                    this.add(action);
                 }
-                this.add(action);
+    
+                this.addSimpleAction(() => {
+                    this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
+                }, rand(2, 3));
             }
-
+        } else {
             this.addSimpleAction(() => {
-                this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
-            }, rand(2, 3));
-        } 
+                this.enemyBlob.swellSpeed = 5;
+                this.enemyBlob.tile("groggy");
+                this.text = "weird...";
+            }, rand(2, 5));
+        }
     }
 
     /**

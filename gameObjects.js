@@ -42,16 +42,6 @@ class GameObject extends EngineObject
             warmup ? this.destroy() : this.kill();
     }
 
-    // this is just for notifying interested objects
-    // override this in derived classes to do something useful
-    /**
-     * @param {any} pos
-     */
-    heardShot(pos)
-    {
-
-    }
-
     /**
      * @returns {number|undefined} time since this object was last damaged
      */
@@ -428,7 +418,7 @@ class Bullet extends EngineObject
     notifyShotSound() {
         engineObjectsCallback(this.pos, 6, (o) => {
             if (o instanceof GameObject)
-                o.heardShot(this.pos);
+                o.noticeEvent(this);
         });
     }
 
@@ -441,7 +431,7 @@ class Bullet extends EngineObject
         }
     
         this.kill();
-        return 1; 
+        return true; 
     }
 
     /**

@@ -20,7 +20,7 @@ class Enemy3Sm
     {
         ROOT : 0,
         ENEMY_WIN : 1,
-        ENEMY3SM__GRENADE_DIVE : 2,
+        HUNT_GRENADE_DIVE : 2,
         HUNTING : 3,
         CALL_FOR_BACKUP : 4,
         CHARGE : 5,
@@ -31,7 +31,7 @@ class Enemy3Sm
         DANCE : 10,
         FALLING_A_SLEEP : 11,
         WAKING : 12,
-        IDLE__GRENADE_DIVE : 13,
+        GRENADE_DIVE : 13,
         NOTICE_NOISE : 14,
         SLEEPING : 15,
         ABOUT_TO_STIR : 16,
@@ -105,12 +105,12 @@ class Enemy3Sm
                 }
                 break;
             
-            // STATE: Enemy3Sm__GRENADE_DIVE
-            case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE:
+            // STATE: HUNT_GRENADE_DIVE
+            case Enemy3Sm.StateId.HUNT_GRENADE_DIVE:
                 switch (eventId)
                 {
-                    case Enemy3Sm.EventId.DO: this.#ENEMY3SM__GRENADE_DIVE_do(); break;
-                    case Enemy3Sm.EventId.DAMAGED: this.#ENEMY3SM__GRENADE_DIVE_damaged(); break;
+                    case Enemy3Sm.EventId.DO: this.#HUNT_GRENADE_DIVE_do(); break;
+                    case Enemy3Sm.EventId.DAMAGED: this.#HUNT_GRENADE_DIVE_damaged(); break;
                 }
                 break;
             
@@ -211,12 +211,12 @@ class Enemy3Sm
                 }
                 break;
             
-            // STATE: IDLE__GRENADE_DIVE
-            case Enemy3Sm.StateId.IDLE__GRENADE_DIVE:
+            // STATE: GRENADE_DIVE
+            case Enemy3Sm.StateId.GRENADE_DIVE:
                 switch (eventId)
                 {
-                    case Enemy3Sm.EventId.DO: this.#IDLE__GRENADE_DIVE_do(); break;
-                    case Enemy3Sm.EventId.DAMAGED: this.#IDLE__GRENADE_DIVE_damaged(); break;
+                    case Enemy3Sm.EventId.DO: this.#GRENADE_DIVE_do(); break;
+                    case Enemy3Sm.EventId.DAMAGED: this.#GRENADE_DIVE_damaged(); break;
                     case Enemy3Sm.EventId.ALARM: this.#IDLE_alarm(); break; // First ancestor handler for this event
                 }
                 break;
@@ -296,7 +296,7 @@ class Enemy3Sm
             {
                 case Enemy3Sm.StateId.ENEMY_WIN: this.#ENEMY_WIN_exit(); break;
                 
-                case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE: this.#ENEMY3SM__GRENADE_DIVE_exit(); break;
+                case Enemy3Sm.StateId.HUNT_GRENADE_DIVE: this.#HUNT_GRENADE_DIVE_exit(); break;
                 
                 case Enemy3Sm.StateId.HUNTING: this.#HUNTING_exit(); break;
                 
@@ -318,7 +318,7 @@ class Enemy3Sm
                 
                 case Enemy3Sm.StateId.WAKING: this.#WAKING_exit(); break;
                 
-                case Enemy3Sm.StateId.IDLE__GRENADE_DIVE: this.#IDLE__GRENADE_DIVE_exit(); break;
+                case Enemy3Sm.StateId.GRENADE_DIVE: this.#GRENADE_DIVE_exit(); break;
                 
                 case Enemy3Sm.StateId.NOTICE_NOISE: this.#NOTICE_NOISE_exit(); break;
                 
@@ -411,66 +411,66 @@ class Enemy3Sm
     
     
     ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state ENEMY3SM__GRENADE_DIVE
+    // event handlers for state HUNT_GRENADE_DIVE
     ////////////////////////////////////////////////////////////////////////////////
     
-    #ENEMY3SM__GRENADE_DIVE_enter()
+    #HUNT_GRENADE_DIVE_enter()
     {
-        this.stateId = Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE;
+        this.stateId = Enemy3Sm.StateId.HUNT_GRENADE_DIVE;
         
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: enter / { e.dive = new Dive1(e, eventArg); }
         {
             // Step 1: execute action `e.dive = new Dive1(e, eventArg);`
             this.vars.e.dive = new Dive1(this.vars.e, this.vars.eventArg);
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: enter / { e.dive.enter(); }
         {
             // Step 1: execute action `e.dive.enter();`
             this.vars.e.dive.enter();
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
     }
     
-    #ENEMY3SM__GRENADE_DIVE_exit()
+    #HUNT_GRENADE_DIVE_exit()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: exit / { e.dive.exit(); }
         {
             // Step 1: execute action `e.dive.exit();`
             this.vars.e.dive.exit();
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         this.stateId = Enemy3Sm.StateId.ROOT;
     }
     
-    #ENEMY3SM__GRENADE_DIVE_damaged()
+    #HUNT_GRENADE_DIVE_damaged()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: DAMAGED
         {
             // Step 1: execute action ``
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         // No ancestor handles this event.
     }
     
-    #ENEMY3SM__GRENADE_DIVE_do()
+    #HUNT_GRENADE_DIVE_do()
     {
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: do / { e.dive.do(); }
         {
             // Step 1: execute action `e.dive.do();`
             this.vars.e.dive.do();
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
-        // Enemy3Sm__GRENADE_DIVE behavior
+        // HUNT_GRENADE_DIVE behavior
         // uml: do [e.dive.isDone()] TransitionTo(HUNTING)
         if (this.vars.e.dive.isDone())
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            this.#ENEMY3SM__GRENADE_DIVE_exit();
+            this.#HUNT_GRENADE_DIVE_exit();
             
             // Step 2: Transition action: ``.
             
@@ -480,7 +480,7 @@ class Enemy3Sm
             // Finish transition by calling pseudo state transition function.
             this.#HUNTING_InitialState_transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-        } // end of behavior for Enemy3Sm__GRENADE_DIVE
+        } // end of behavior for HUNT_GRENADE_DIVE
         
         // No ancestor handles this event.
     }
@@ -594,7 +594,7 @@ class Enemy3Sm
     #HUNTING_notice()
     {
         // HUNTING behavior
-        // uml: NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(Enemy3Sm__GRENADE_DIVE)
+        // uml: NOTICE [eventArg instanceof Grenade &&e.groundObject] TransitionTo(HUNT_GRENADE_DIVE)
         if (this.vars.eventArg instanceof Grenade &&this.vars.e.groundObject)
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
@@ -602,8 +602,8 @@ class Enemy3Sm
             
             // Step 2: Transition action: ``.
             
-            // Step 3: Enter/move towards transition target `Enemy3Sm__GRENADE_DIVE`.
-            this.#ENEMY3SM__GRENADE_DIVE_enter();
+            // Step 3: Enter/move towards transition target `HUNT_GRENADE_DIVE`.
+            this.#HUNT_GRENADE_DIVE_enter();
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
@@ -1379,51 +1379,51 @@ rand() < 0.5)
     
     
     ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state IDLE__GRENADE_DIVE
+    // event handlers for state GRENADE_DIVE
     ////////////////////////////////////////////////////////////////////////////////
     
-    #IDLE__GRENADE_DIVE_enter()
+    #GRENADE_DIVE_enter()
     {
-        this.stateId = Enemy3Sm.StateId.IDLE__GRENADE_DIVE;
+        this.stateId = Enemy3Sm.StateId.GRENADE_DIVE;
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: enter / { e.dive = new Dive1(e, e.notice.source); }
         {
             // Step 1: execute action `e.dive = new Dive1(e, e.notice.source);`
             this.vars.e.dive = new Dive1(this.vars.e, this.vars.e.notice.source);
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: enter / { e.dive.enter(); }
         {
             // Step 1: execute action `e.dive.enter();`
             this.vars.e.dive.enter();
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
     }
     
-    #IDLE__GRENADE_DIVE_exit()
+    #GRENADE_DIVE_exit()
     {
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: exit / { e.dive.exit(); }
         {
             // Step 1: execute action `e.dive.exit();`
             this.vars.e.dive.exit();
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
         this.stateId = Enemy3Sm.StateId.NON_AGRO;
     }
     
-    #IDLE__GRENADE_DIVE_damaged()
+    #GRENADE_DIVE_damaged()
     {
         let consume_event = false;
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: DAMAGED
         {
             // Consume event `damaged`.
             consume_event = true;
             // Step 1: execute action ``
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
         // Check if event has been consumed before calling ancestor handler.
         if (!consume_event)
@@ -1432,21 +1432,21 @@ rand() < 0.5)
         }
     }
     
-    #IDLE__GRENADE_DIVE_do()
+    #GRENADE_DIVE_do()
     {
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: do / { e.dive.do(); }
         {
             // Step 1: execute action `e.dive.do();`
             this.vars.e.dive.do();
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
-        // IDLE__GRENADE_DIVE behavior
+        // GRENADE_DIVE behavior
         // uml: do [e.dive.isDone()] TransitionTo(NON_AGRO.<ExitPoint>(skip_suprised))
         if (this.vars.e.dive.isDone())
         {
             // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
-            this.#IDLE__GRENADE_DIVE_exit();
+            this.#GRENADE_DIVE_exit();
             
             // Step 2: Transition action: ``.
             
@@ -1468,7 +1468,7 @@ rand() < 0.5)
                 this.#IDLE_ChoicePoint__transition();
                 return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
             } // end of behavior for NON_AGRO.<ExitPoint>(skip_suprised)
-        } // end of behavior for IDLE__GRENADE_DIVE
+        } // end of behavior for GRENADE_DIVE
         
         // No ancestor handles this event.
     }
@@ -1487,6 +1487,13 @@ rand() < 0.5)
         {
             // Step 1: execute action `e.notice = new Notice1(e, eventArg);`
             this.vars.e.notice = new Notice1(this.vars.e, this.vars.eventArg);
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: enter / { e.notice.enter(); }
+        {
+            // Step 1: execute action `e.notice.enter();`
+            this.vars.e.notice.enter();
         } // end of behavior for NOTICE_NOISE
     }
     
@@ -1524,15 +1531,15 @@ rand() < 0.5)
             // NON_AGRO.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // NON_AGRO.<ChoicePoint>() behavior
-            // uml: [e.notice.isGrenade()] TransitionTo(IDLE__GRENADE_DIVE)
+            // uml: [e.notice.isGrenade()] TransitionTo(GRENADE_DIVE)
             if (this.vars.e.notice.isGrenade())
             {
                 // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
                 // Step 2: Transition action: ``.
                 
-                // Step 3: Enter/move towards transition target `IDLE__GRENADE_DIVE`.
-                this.#IDLE__GRENADE_DIVE_enter();
+                // Step 3: Enter/move towards transition target `GRENADE_DIVE`.
+                this.#GRENADE_DIVE_enter();
                 
                 // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
                 return;
@@ -1564,6 +1571,23 @@ rand() < 0.5)
         {
             // Step 1: execute action `e.notice.notice(eventArg);`
             this.vars.e.notice.notice(this.vars.eventArg);
+        } // end of behavior for NOTICE_NOISE
+        
+        // NOTICE_NOISE behavior
+        // uml: NOTICE [eventArg instanceof Bullet] TransitionTo(NON_AGRO.<ExitPoint>(surprised))
+        if (this.vars.eventArg instanceof Bullet)
+        {
+            // Step 1: Exit states until we reach `NON_AGRO` state (Least Common Ancestor for transition).
+            this.#NOTICE_NOISE_exit();
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `NON_AGRO.<ExitPoint>(surprised)`.
+            // NON_AGRO.<ExitPoint>(surprised) is a pseudo state and cannot have an `enter` trigger.
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#NON_AGRO_ExitPoint_surprised__transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for NOTICE_NOISE
         
         // No ancestor handles this event.
@@ -1922,7 +1946,7 @@ this.vars.e.playerDist() < 1)
         {
             case Enemy3Sm.StateId.ROOT: return "ROOT";
             case Enemy3Sm.StateId.ENEMY_WIN: return "ENEMY_WIN";
-            case Enemy3Sm.StateId.ENEMY3SM__GRENADE_DIVE: return "ENEMY3SM__GRENADE_DIVE";
+            case Enemy3Sm.StateId.HUNT_GRENADE_DIVE: return "HUNT_GRENADE_DIVE";
             case Enemy3Sm.StateId.HUNTING: return "HUNTING";
             case Enemy3Sm.StateId.CALL_FOR_BACKUP: return "CALL_FOR_BACKUP";
             case Enemy3Sm.StateId.CHARGE: return "CHARGE";
@@ -1933,7 +1957,7 @@ this.vars.e.playerDist() < 1)
             case Enemy3Sm.StateId.DANCE: return "DANCE";
             case Enemy3Sm.StateId.FALLING_A_SLEEP: return "FALLING_A_SLEEP";
             case Enemy3Sm.StateId.WAKING: return "WAKING";
-            case Enemy3Sm.StateId.IDLE__GRENADE_DIVE: return "IDLE__GRENADE_DIVE";
+            case Enemy3Sm.StateId.GRENADE_DIVE: return "GRENADE_DIVE";
             case Enemy3Sm.StateId.NOTICE_NOISE: return "NOTICE_NOISE";
             case Enemy3Sm.StateId.SLEEPING: return "SLEEPING";
             case Enemy3Sm.StateId.ABOUT_TO_STIR: return "ABOUT_TO_STIR";
