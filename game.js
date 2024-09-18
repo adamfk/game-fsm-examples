@@ -126,7 +126,7 @@ function gameRenderPost()
         overlayContext.strokeText(text, x, y);
         overlayContext.fillText(text, x, y);
     }
-    drawText('Score: ' + score,   overlayCanvas.width*1/4, 20);
+    drawText('Score: ' + (score - deaths*2),   overlayCanvas.width*1/4, 20);
     drawText('Attempt: ' + (deaths + 1), overlayCanvas.width*3/4, 20);
     drawText('Time: ' + time.toFixed(1), overlayCanvas.width/2, 20);
 }

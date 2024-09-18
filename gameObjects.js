@@ -113,7 +113,7 @@ class GameObject extends BasicGameObject
      */
     noticeEvent(noticeEvent)
     {
-        console.log("notice event", this, noticeEvent);
+        // console.log("notice event", this, noticeEvent);
     }
 
     isDead()                { return !this.health; }
