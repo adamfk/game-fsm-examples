@@ -21,8 +21,8 @@ class Enemy3 extends EnemyBlob
         this.surprised = new Surprised1(this);
         this.alarm = new Alarm1(this);
 
-        /** @type {Notice1?} */
-        this.notice = null;
+        /** @type {NoticeSeq1?} */
+        this.noticeSeq = null;
 
         /** @type {Dive1?} */
         this.dive = null;
@@ -47,7 +47,6 @@ class Enemy3 extends EnemyBlob
         this.updateStallCount();
 
         // run state machine
-        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.DO);
         this.debugTextBelowMe(Enemy3Sm.stateIdToString(this.sm.stateId));
 
@@ -55,17 +54,17 @@ class Enemy3 extends EnemyBlob
     }
 
     damageEvent() {
-        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.DAMAGED);
     }
 
     /**
      * Override
-     * @param {EngineObject} objectToNotice
+     * @param {NoticeEvent} noticeEvent
      */
-    noticeEvent(objectToNotice) {
-        this.sm.vars.eventArg = objectToNotice;
+    noticeEvent(noticeEvent) {
+        this.sm.vars.noticeEvent = noticeEvent;
         this.sm.dispatchEvent(Enemy3Sm.EventId.NOTICE);
+        super.noticeEvent(noticeEvent);
     }
 
     updateStallCount() {
@@ -88,7 +87,6 @@ class Enemy3 extends EnemyBlob
     }
 
     alarmEvent() {
-        this.sm.vars.eventArg = null;
         this.sm.dispatchEvent(Enemy3Sm.EventId.ALARM);
     }
 

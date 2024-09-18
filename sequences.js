@@ -44,13 +44,13 @@ class Charge1 extends EnemyBlobSequence {
             };
             action.do = () => {
                 const chargeRatio = this.timer.get() / this.chargeMaxTime;
-                this.enemyBlob.angle = chargeRatio * PI/2;
-        
+                this.enemyBlob.angle = chargeRatio * PI / 2;
+
                 // launch towards player!
                 if (chargeRatio >= 1) {
                     // this.velocity = this.normalVecToPlayer(); // THIS IS INSANE!!! YEET MODE!
                     this.enemyBlob.velocity.x = this.targetVec.x;
-        
+
                     // slow it down a bit if we are in the air (no friction)
                     if (!this.enemyBlob.groundObject) {
                         this.enemyBlob.velocity.x *= 0.3;
@@ -206,7 +206,7 @@ class Surprised1 extends EnemyBlobSequence {
             enemyBlob.smallVerticalHop();
             enemyBlob.tile("surprised");
         });
-        this.addDelayAction(rand(0.5,2));
+        this.addDelayAction(rand(0.5, 2));
     }
 
     getText() {
@@ -248,9 +248,9 @@ class Alarm1 extends EnemyBlobSequence {
             } else {
                 this.text = "[i need backup]";
             }
-        }, rand(0.5,1.5));
+        }, rand(0.5, 1.5));
 
-        for (let i = 0; i < rand(3,8); i++) {
+        for (let i = 0; i < rand(3, 8); i++) {
             this.addSimpleAction(() => {
                 this.text = this.getText();
                 enemyBlob.alertComrades();
@@ -289,28 +289,23 @@ class Alarm1 extends EnemyBlobSequence {
     }
 }
 
-class Notice1 extends EnemyBlobSequence {
+class NoticeSeq1 extends EnemyBlobSequence {
 
     noticeTextOptions = ["huh?", "da heck?", "hmm?"];
     curiousTextOptions = ["neat!", "I wonder..."];
 
     /**
      * @param {Enemy3} enemyBlob
-     * @param {GameObject} noticeSource
+     * @param {NoticeEvent} noticeEvent
      */
-    constructor(enemyBlob, noticeSource) {
+    constructor(enemyBlob, noticeEvent) {
         super(enemyBlob);
         this.enemyBlob = enemyBlob;
         this.text = "";
         this.shouldIdle = false;
 
-        // if no notice source, use player
-        if (!noticeSource || !noticeSource.pos) {
-            noticeSource = player;
-        }
-
-        /** @type {GameObject?} */
-        this.source = noticeSource;
+        /** @type {NoticeEvent} */
+        this.source = noticeEvent;
         this.timer = new Timer(5);
 
         this.addSimpleAction(() => {
@@ -321,19 +316,34 @@ class Notice1 extends EnemyBlobSequence {
 
         this.addSimpleAction(() => {
             // face in direction of notice source
-            if (this.source) {
-                this.enemyBlob.facePosition(this.source.pos);
-            }
+            this.enemyBlob.facePosition(this.source.pos);
         }, rand(0.2, 0.8));
 
-        if (this.source instanceof Grenade) {
-            if (rand() < 0.25)
-            {
-                // move towards target and study item for x seconds
+        let shouldEarlyExit = false;
+        let wanderDuration = 3;
+
+        if (this.source.isGrenadeLive()) {
+            shouldEarlyExit = rand() > 0.25;
+        } else {
+            wanderDuration = rand(10,15);
+        }
+
+        // if (this.source.isGrenadeExplosion())
+        // {
+        //     wanderDuration = rand(10,15);
+        // }
+
+        if (!shouldEarlyExit) {
+            // maybe move towards target and study item for x seconds
+            const maxDistance = 20;
+            const distanceToSource = max(maxDistance, this.enemyBlob.pos.distance(this.source.pos));
+            const loudness = (maxDistance - distanceToSource) / maxDistance;
+
+            if (rand() < 0.75 + loudness) {
                 {
                     const action = new ActionHandler();
                     action.enter = () => {
-                        this.timer.set(5);
+                        this.timer.set(wanderDuration);
                         this.text = "I wonder...";
                         this.enemyBlob.tile("study");
                     };
@@ -342,36 +352,33 @@ class Notice1 extends EnemyBlobSequence {
                     };
                     action.do = () => {
                         this.enemyBlob.facePosition(this.source.pos);
-                        this.enemyBlob.velocity.x = this.enemyBlob.normalVecToPos(this.source.pos).x * 0.03;
+                        // this.enemyBlob.velocity.x = this.enemyBlob.normalVecToPos(this.source.pos).x * 0.03;
+                        this.enemyBlob.walkOrJumpTowardsTarget(this.enemyBlob.normalVecToPos(this.source.pos));
                     }
                     this.add(action);
                 }
-    
+
                 this.addSimpleAction(() => {
-                    this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
-                }, rand(2, 3));
+                    if (this.source.isGrenade() && this.source.isObjectAlive()) {
+                        this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
+                    }
+                    else {
+                        this.text = "wtf happened here?";
+
+                        this.addSimpleAction(() => {
+                            this.enemyBlob.tile("groggy");
+                            this.text = "weird...";
+                        }, rand(1, 3));
+                    }
+                }, 3);
+            } // should investigate
+            else {
+                this.addSimpleAction(() => {
+                    this.enemyBlob.tile("groggy");
+                    this.text = "meh...";
+                }, rand(1, 3));
             }
-        } else {
-            this.addSimpleAction(() => {
-                this.enemyBlob.swellSpeed = 5;
-                this.enemyBlob.tile("groggy");
-                this.text = "weird...";
-            }, rand(2, 5));
-        }
-    }
-
-    /**
-     * @param {GameObject} noticeSource
-     */
-    notice(noticeSource) {
-        // we could modify it to notice something new if we wanted, but for now, just ignore
-        if (!this.source) {
-            this.source = noticeSource;
-        }
-    }
-
-    isGrenade() {
-        return this.source instanceof Grenade;
+        } // should early exit
     }
 
     do() {
@@ -388,14 +395,15 @@ class Dive1 extends EnemyBlobSequence {
 
     /**
      * @param {Enemy3} enemyBlob
-     * @param {GameObject} grenadeSource
+     * @param {NoticeEvent} noticeEvent
      */
-    constructor(enemyBlob, grenadeSource) {
+    constructor(enemyBlob, noticeEvent) {
         const e = enemyBlob;
         super(enemyBlob);
         this.text = "";
-        this.grenadeSource = grenadeSource;
+        this.grenadeSource = noticeEvent;
         this.crawlSpeed = rand(0.002, 0.005);
+        this.shouldGetUp = false;
 
         this.timer = new Timer(0);
 
@@ -404,28 +412,21 @@ class Dive1 extends EnemyBlobSequence {
             action.enter = () => {
                 enemyBlob.tile("alarm");
                 this.timer.set();
-                e.angle = PI/2;
+                e.angle = PI / 2;
                 e.velocity.y = rand(0.1, 0.2);
                 let xVel = rand(0.1, 0.2);
 
-                if (e.pos.x < grenadeSource.pos.x) {
+                if (e.pos.x < noticeEvent.pos.x) {
                     xVel *= -1;
                     e.mirror = true;
                     e.angle *= -1;
                 }
 
-                // Slow it down a bit if we are in the air (no friction)
-                // Unfortunately, LittleJS platformer bug (?) makes blob randomly look like it is in the air.
-                // Maybe due to the swelling animation?
-                // if (!e.groundObject) {
-                //     xVel *= 0.2;
-                // }
-
                 e.velocity.x += xVel;
             };
             action.isDone = () => {
                 const elapsedTime = this.timer.get();
-                return elapsedTime >= 2.5 || grenadeSource.destroyed;
+                return elapsedTime >= 3 || this.shouldGetUp;
             };
             action.do = () => {
                 if (this.timer.get() < 1.0) {
@@ -437,8 +438,8 @@ class Dive1 extends EnemyBlobSequence {
                 // crawl away from grenade
                 if (e.groundObject) {
                     let xVel = this.crawlSpeed;
-                    
-                    if (e.pos.x < grenadeSource.pos.x) {
+
+                    if (e.pos.x < noticeEvent.pos.x) {
                         xVel *= -1;
                     }
                     e.velocity.x += xVel;
@@ -450,7 +451,20 @@ class Dive1 extends EnemyBlobSequence {
         // rest post dive
         this.addSimpleAction(() => {
             e.tile("sleeping");
-        }, rand(0.25, 0.75));
+        }, rand(0.1, 0.3));
+    }
+
+    /**
+     * @param {NoticeEvent} noticeEvent 
+     */
+    notice(noticeEvent) {
+        if (noticeEvent.isGrenadeExplosion()) {
+            this.shouldGetUp = true;
+        }
+    }
+
+    damaged() {
+        this.shouldGetUp = true;
     }
 
     exit() {

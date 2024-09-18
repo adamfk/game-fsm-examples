@@ -26,6 +26,7 @@ class EnemyBlob extends Enemy {
         this.swellTimer = new Timer(rand(1e3));
         this.setCollision(true, false);
         this.disableAttack = false;
+        this.takesExtraDamage = false;
 
         /**
          * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"}
@@ -130,6 +131,10 @@ class EnemyBlob extends Enemy {
      * @param {GameObject} damagingObject
      */
     damage(damage, damagingObject) {
+        if (this.takesExtraDamage) {
+            damage *= 3;
+        }
+
         const damaged = super.damage(damage, damagingObject);
         // this.sm.dispatchEvent(Enemy1Sm.EventId.DAMAGED);
         return damaged;
