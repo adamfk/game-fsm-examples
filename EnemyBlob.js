@@ -45,6 +45,7 @@ class EnemyBlob extends Enemy {
             // if player is above enemy, they damage the enemy and bounce up
             if (player.pos.y > this.pos.y + this.size.y / 2) {
                 this.damage(1, player.asGameObject());
+                cameraFollowResetTimer();
                 player.velocity.y = 0.1; // less camera shake
                 this.velocity.y = -0.02; // make enemy bounce back. Important so that high velocity enemy jump doesn't go through the player
                 this.jumpedOnEvent(player);

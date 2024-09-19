@@ -13,6 +13,8 @@ setShowSplashScreen(false);
 
 let spriteAtlas, score, deaths;
 
+let cameraTimer = new Timer();
+
 let stadiumDamage = false;
 
 // we can't use keyWasPressed() because it doesn't work when paused
@@ -54,7 +56,7 @@ function gameInit()
     objectDefaultAngleDamping = .99;
     cameraScale = 4*16;
     cameraPos = getCameraTarget();
-    
+    cameraTimer.set();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,10 +103,18 @@ function getCameraTarget()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+function cameraFollowResetTimer()
+{
+    cameraTimer.set();
+}
+
 function gameUpdatePost()
 {
-    // update camera
-    cameraPos = cameraPos.lerp(getCameraTarget(), clamp(player.getAliveTime()/2));
+    // this linear interpolation makes the camera follow the player smoothly
+    // the timer is reset when the player respawns
+    // and when bouncing on an enemy (to prevent camera shake)
+    cameraPos = cameraPos.lerp(getCameraTarget(), clamp(cameraTimer.get()/5));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

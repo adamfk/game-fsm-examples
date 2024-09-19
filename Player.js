@@ -31,6 +31,7 @@ class Player extends Character
     {
         ++deaths;
         super.kill();
+        cameraFollowResetTimer();
     }
 
     /**
