@@ -1929,7 +1929,7 @@ class EngineObject
             return;
         
         // disconnect from parent and destroy chidren
-        this.destroyed = 1;
+        this.destroyed = true;
         this.parent && this.parent.removeChild(this);
         for (const child of this.children)
             child.destroy(child.parent = 0);

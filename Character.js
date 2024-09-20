@@ -247,10 +247,16 @@ class Character extends GameObject
         drawTile(bodyPos, drawSize, this.tileInfo, this.color, this.angle, this.mirror);
     }
 
+    /**
+     * Returns amount damaged
+     * @param {number} damage 
+     * @param {GameObject} damagingObject 
+     * @returns 
+     */
     damage(damage, damagingObject)
     {
         if (this.isDead() || this.getAliveTime() < 1 || this.dodgeTimer.active())
-            return;
+            return 0;
 
         makeBlood(damagingObject ? damagingObject.pos : this.pos, this.color);
         super.damage(damage, damagingObject);
@@ -278,18 +284,18 @@ class Character extends GameObject
     collideWithTile(data, pos)
     {
         if (!data)
-            return;
+            return false;
 
         if (data == tileType_ladder)
         {
             // handle ladder collisions
             if (pos.y + 1 > this.lastPos.y - this.size.y/2)
-                return;
+                return false;
 
             if (getTileCollisionData(pos.add(vec2(0,1)))      // above
                 && !getTileCollisionData(pos.add(vec2(1,0)))  // left
                 && !getTileCollisionData(pos.add(vec2(1,0)))) // right
-                return; // dont collide if something above it and nothing to left or right
+                return false; // don't collide if something above it and nothing to left or right
 
             // allow standing on top of ladders
             return !this.climbingLadder;
@@ -301,9 +307,9 @@ class Character extends GameObject
         {
             // break blocks above
             this.velocity.y = 0;
-            return;
+            return false;
         }
 
-        return 1;
+        return true;
     }
 }

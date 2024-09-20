@@ -1,7 +1,7 @@
 'use strict';
 
 class EnemyBlob extends Enemy {
-    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6, alarm: 7 };
+    tileOffsets = { awake: 0, sleeping: 1, groggy: 2, surprised: 3, mad: 4, chomp: 5, hurt: 6, alarm: 7, study: 8, mortified: 9 };
 
     static baseTileIndex = 6;
 
@@ -26,9 +26,10 @@ class EnemyBlob extends Enemy {
         this.swellTimer = new Timer(rand(1e3));
         this.setCollision(true, false);
         this.disableAttack = false;
+        this.takesExtraDamage = false;
 
         /**
-         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"}
+         * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"}
          */
         this.tileName = "sleeping";
     }
@@ -44,6 +45,7 @@ class EnemyBlob extends Enemy {
             // if player is above enemy, they damage the enemy and bounce up
             if (player.pos.y > this.pos.y + this.size.y / 2) {
                 this.damage(1, player.asGameObject());
+                cameraFollowResetTimer();
                 player.velocity.y = 0.1; // less camera shake
                 this.velocity.y = -0.02; // make enemy bounce back. Important so that high velocity enemy jump doesn't go through the player
                 this.jumpedOnEvent(player);
@@ -130,6 +132,10 @@ class EnemyBlob extends Enemy {
      * @param {GameObject} damagingObject
      */
     damage(damage, damagingObject) {
+        if (this.takesExtraDamage) {
+            damage *= 3;
+        }
+
         const damaged = super.damage(damage, damagingObject);
         // this.sm.dispatchEvent(Enemy1Sm.EventId.DAMAGED);
         return damaged;
@@ -143,7 +149,7 @@ class EnemyBlob extends Enemy {
     }
 
     /**
-     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm"} tileName
+     * @param {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"} tileName
      */
     tile(tileName) {
         this.tileName = tileName;

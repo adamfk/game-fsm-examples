@@ -8,7 +8,27 @@
 
 'use strict';
 
-class GameObject extends EngineObject 
+class BasicGameObject extends EngineObject 
+{
+    /**
+     * @param {string} type
+     * @param {{ radius?: number, instanceOfFilter?: any, pos?: Vector2}} params
+     */
+    emitNoticeEvent(type, params)
+    {
+        params = params || {};
+        const radius = params.radius || 6;
+        const pos = (params.pos || this.pos).copy();
+        const instanceOfFilter = params.instanceOfFilter || GameObject;
+
+        engineObjectsCallback(pos, radius, (/** @type {GameObject}} */ o) => {
+            if (o instanceof instanceOfFilter)
+                o.noticeEvent(new NoticeEvent(this, pos, type));
+        });
+    }
+}
+
+class GameObject extends BasicGameObject 
 {
     /**
      * @param {Vector2} pos 
@@ -40,16 +60,6 @@ class GameObject extends EngineObject
         // kill if below level
         if (!this.isDead() && this.pos.y < -9)
             warmup ? this.destroy() : this.kill();
-    }
-
-    // this is just for notifying interested objects
-    // override this in derived classes to do something useful
-    /**
-     * @param {any} pos
-     */
-    heardShot(pos)
-    {
-
     }
 
     /**
@@ -98,6 +108,14 @@ class GameObject extends EngineObject
 
     }
 
+    /**
+     * @param {NoticeEvent} noticeEvent 
+     */
+    noticeEvent(noticeEvent)
+    {
+        // console.log("notice event", this, noticeEvent);
+    }
+
     isDead()                { return !this.health; }
     
     /**
@@ -110,10 +128,31 @@ class GameObject extends EngineObject
     }
 
     /**
+     * @param {Vector2} pos
+     */
+    normalVecToPos(pos) {
+        return pos.subtract(this.pos).normalize();
+    }
+
+    /**
+     * @param {Vector2} pos
+     */
+    facePosition(pos) {
+        this.mirror = pos.x < this.pos.x;
+    }
+
+    /**
      * @param {string} str
      */
     debugTextAboveMe(str) {
         debugText(str, this.pos.add(vec2(0,1)), 0.5);
+    }
+
+    /**
+     * @param {string} str
+     */
+    debugTextBelowMe(str) {
+        debugText(str, this.pos.add(vec2(0,-1)), 0.5);
     }
 
     /**
@@ -126,6 +165,49 @@ class GameObject extends EngineObject
     static debugAreaSize = vec2(30);
     inDebugArea() { return isOverlapping(this.pos, this.size, cameraPos, Enemy.debugAreaSize); }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+const NoticeIds = 
+{
+    bulletShot: "bulletShot",
+    bulletEnd: "bulletEnd",
+    grenadeThrown: "grenadeThrown",
+    /** 
+     * This is repeated every half second or so. Gives wandering in enemies a chance to notice it. 
+     */
+    grenadeAlive: "grenadeAlive",
+    grenadeExplosion: "grenadeExplosion",
+}
+Object.freeze(NoticeIds);
+
+class NoticeEvent
+{
+    /**
+     * @param {BasicGameObject} obj
+     * @param {Vector2} originalPosition
+     * @param {string} type - should be of type NoticeIds
+     */
+    constructor(obj, originalPosition, type)
+    {
+        this.obj = obj;
+        /** we keep track of starting position because sometimes the object is destroyed and no longer has a position */
+        this.originalPosition = originalPosition;
+        this.type = type;
+    }
+
+    isObjectAlive() { return !this.obj.destroyed; }
+    get pos() { return  this.obj.pos || this.originalPosition; }
+
+    isBulletShot() { return this.type === NoticeIds.bulletShot; }
+    isBulletEnd() { return this.type === NoticeIds.bulletEnd; }
+    isGrenadeThrown() { return this.type === NoticeIds.grenadeThrown; }
+    isGrenadeLive() { return this.type === NoticeIds.grenadeAlive; }
+    isGrenadeExplosion() { return this.type === NoticeIds.grenadeExplosion; }
+    isGrenade() { return this.isGrenadeThrown() || this.isGrenadeLive() || this.isGrenadeExplosion(); }
+    isNotRepeat() { return !this.isGrenadeLive(); }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -209,11 +291,13 @@ class Grenade extends GameObject
         super(pos, vec2(.2), spriteAtlas.grenade);
 
         this.beepTimer = new Timer(1);
+        this.noticeTimer = new Timer(0.5);
         this.elasticity   = .3;
         this.friction     = .9;
         this.angleDamping = .96;
         this.renderOrder  = 1e8;
         this.setCollision(true,false);
+        this.emitNoticeEvent(NoticeIds.grenadeThrown, { radius: 6, instanceOfFilter: Enemy });
     }
 
     update()
@@ -224,11 +308,21 @@ class Grenade extends GameObject
         {
             explosion(this.pos);
             this.destroy();
+            this.emitNoticeEvent(NoticeIds.grenadeExplosion, { radius: 20, instanceOfFilter: Enemy });
         }
-        else if (this.beepTimer.elapsed())
+        else
         {
-            sound_grenade.play(this.pos)
-            this.beepTimer.set(1);
+            if (this.beepTimer.elapsed())
+            {
+                sound_grenade.play(this.pos)
+                this.beepTimer.set(1);
+            }
+
+            if (this.noticeTimer.elapsed())
+            {
+                this.noticeTimer.set(0.5);
+                this.emitNoticeEvent(NoticeIds.grenadeAlive, { radius: 6, instanceOfFilter: Enemy });
+            }
         }
     }
        
@@ -316,7 +410,7 @@ class Weapon extends EngineObject
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Bullet extends EngineObject 
+class Bullet extends BasicGameObject 
 {
     /**
      * @param {Vector2} pos
@@ -336,10 +430,10 @@ class Bullet extends EngineObject
         this.renderOrder = 100;
         this.drawSize = vec2(.2,.5);
         this.range = 5;
-        this.setCollision(1,0);
+        this.setCollision(true, false);
 
         // notify any nearby objects of the shot
-        this.notifyShotSound();
+        this.emitNoticeEvent(NoticeIds.bulletEnd, { radius: 10, instanceOfFilter: Enemy });
     }
 
     update()
@@ -367,19 +461,14 @@ class Bullet extends EngineObject
             );
 
             // notify any nearby objects of the shot
-            this.notifyShotSound();
-
+            this.emitNoticeEvent(NoticeIds.bulletEnd, { radius: 3, instanceOfFilter: Enemy });
             this.destroy();
         }
     }
-    
-    notifyShotSound() {
-        engineObjectsCallback(this.pos, 6, (/** @type {{ isGameObject: any; heardShot: (arg0: Vector2) => void; }} */ o) => {
-            if (o.isGameObject)
-                o.heardShot(this.pos);
-        });
-    }
 
+    /**
+     * @param {{ isGameObject: any; damage?: any; applyForce?: any; }} o
+     */
     collideWithObject(o)
     {
         if (o.isGameObject && o != this.attacker)
@@ -389,7 +478,7 @@ class Bullet extends EngineObject
         }
     
         this.kill();
-        return 1; 
+        return true; 
     }
 
     /**
@@ -399,14 +488,14 @@ class Bullet extends EngineObject
     collideWithTile(data, pos)
     {
         if (data <= 0)
-            return 0;
+            return false;
         
         if (stadiumDamage) {
             destroyTile(pos);
         }
 
         this.kill();
-        return 1; 
+        return true;
     }
 
     kill()

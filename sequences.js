@@ -6,7 +6,7 @@ class EnemyBlobSequence extends ActionSequence {
      */
     constructor(enemyBlob) {
         super();
-        this.gameObject = enemyBlob;
+        this.enemyBlob = enemyBlob;
     }
 
     /**
@@ -14,11 +14,62 @@ class EnemyBlobSequence extends ActionSequence {
      * @param {number} duration
      */
     addTileAction(tileName, duration) {
-        this.addSimpleAction(() => { this.gameObject.tile(tileName) });
+        this.addSimpleAction(() => { this.enemyBlob.tile(tileName) });
         this.addDelayAction(duration);
     }
 }
 
+class Charge1 extends EnemyBlobSequence {
+    /**
+     * @param {EnemyBlob} enemyBlob
+     */
+    constructor(enemyBlob) {
+        super(enemyBlob);
+        this.timer = new Timer();
+        this.chargeMaxTime = 0.5;
+
+        /** @type {Vector2} */
+        this.targetVec = null;
+
+        // charge up and then launch at player's position
+        {
+            const action = new ActionHandler();
+            action.enter = () => {
+                this.enemyBlob.angle = 0;
+                this.targetVec = this.enemyBlob.normalVecToPlayer();
+                this.timer.set();
+            };
+            action.isDone = () => {
+                return this.timer.get() >= this.chargeMaxTime + 0.01;
+            };
+            action.do = () => {
+                const chargeRatio = this.timer.get() / this.chargeMaxTime;
+                this.enemyBlob.angle = chargeRatio * PI / 2;
+
+                // launch towards player!
+                if (chargeRatio >= 1) {
+                    // this.velocity = this.normalVecToPlayer(); // THIS IS INSANE!!! YEET MODE!
+                    this.enemyBlob.velocity.x = this.targetVec.x;
+
+                    // slow it down a bit if we are in the air (no friction)
+                    if (!this.enemyBlob.groundObject) {
+                        this.enemyBlob.velocity.x *= 0.3;
+                    }
+                }
+            }
+            action.exit = () => {
+                // this.enemyBlob.velocity.x = 0;
+                this.enemyBlob.angle = 0;
+            }
+            this.add(action);
+        }
+
+        // rest post charge
+        this.addSimpleAction(() => {
+            this.enemyBlob.tile("groggy");
+        }, 1.5);
+    }
+}
 
 class Dance1 extends EnemyBlobSequence {
 
@@ -56,8 +107,8 @@ class Dance1 extends EnemyBlobSequence {
     exit() {
         super.exit();
 
-        this.gameObject.velocity = vec2();
-        this.gameObject.angle = 0;
+        this.enemyBlob.velocity = vec2();
+        this.enemyBlob.angle = 0;
         // this.gameObject.mirror = false; // leave as is
     }
 
@@ -72,15 +123,15 @@ class Dance1 extends EnemyBlobSequence {
 
         const action = new ActionHandler();
         action.enter = () => {
-            const mirroredSign = this.gameObject.getMirrorSign();
+            const mirroredSign = this.enemyBlob.getMirrorSign();
             desiredAngle = mirroredSign * originalDesiredAngle;
-            incPerFrame = (desiredAngle - this.gameObject.angle) / frameCount;
+            incPerFrame = (desiredAngle - this.enemyBlob.angle) / frameCount;
         };
         action.do = () => {
-            this.gameObject.angle += incPerFrame;
+            this.enemyBlob.angle += incPerFrame;
         };
         action.isDone = () => {
-            const absDiff = Math.abs(this.gameObject.angle - desiredAngle);
+            const absDiff = Math.abs(this.enemyBlob.angle - desiredAngle);
             return absDiff <= Math.abs(incPerFrame);
         };
         this.add(action);
@@ -90,13 +141,13 @@ class Dance1 extends EnemyBlobSequence {
     addHopAction() {
         const action = new ActionHandler();
         action.enter = () => {
-            this.gameObject.velocity.y = 0.1;
-            sound_jump.play(this.gameObject.pos, .4, 2);
+            this.enemyBlob.velocity.y = 0.1;
+            sound_jump.play(this.enemyBlob.pos, .4, 2);
         };
         action.do = () => {
         };
         action.isDone = () => {
-            return this.gameObject.groundObject;
+            return this.enemyBlob.groundObject;
         };
         this.add(action);
     }
@@ -155,7 +206,7 @@ class Surprised1 extends EnemyBlobSequence {
             enemyBlob.smallVerticalHop();
             enemyBlob.tile("surprised");
         });
-        this.addDelayAction(rand(0.5,2));
+        this.addDelayAction(rand(0.5, 2));
     }
 
     getText() {
@@ -167,7 +218,7 @@ class Surprised1 extends EnemyBlobSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe(this.text);
+        this.enemyBlob.debugTextAboveMe(this.text);
     }
 }
 
@@ -197,9 +248,9 @@ class Alarm1 extends EnemyBlobSequence {
             } else {
                 this.text = "[i need backup]";
             }
-        }, rand(0.5,1.5));
+        }, rand(0.5, 1.5));
 
-        for (let i = 0; i < rand(3,8); i++) {
+        for (let i = 0; i < rand(3, 8); i++) {
             this.addSimpleAction(() => {
                 this.text = this.getText();
                 enemyBlob.alertComrades();
@@ -231,9 +282,193 @@ class Alarm1 extends EnemyBlobSequence {
             return;
 
         super.do();
-        this.gameObject.debugTextAboveMe(this.text);
+        this.enemyBlob.debugTextAboveMe(this.text);
         const normalVecToPlayer = this.enemyBlob.normalVecToPlayer();
         const target = this.evade ? normalVecToPlayer.scale(-1) : normalVecToPlayer;
         this.enemyBlob.walkOrJumpTowardsTarget(target);
+    }
+}
+
+class NoticeSeq1 extends EnemyBlobSequence {
+
+    noticeTextOptions = ["huh?", "da heck?", "hmm?"];
+    curiousTextOptions = ["neat!", "I wonder..."];
+
+    /**
+     * @param {Enemy3} enemyBlob
+     * @param {NoticeEvent} noticeEvent
+     */
+    constructor(enemyBlob, noticeEvent) {
+        super(enemyBlob);
+        this.enemyBlob = enemyBlob;
+        this.text = "";
+        this.shouldIdle = false;
+
+        /** @type {NoticeEvent} */
+        this.source = noticeEvent;
+        this.timer = new Timer(5);
+
+        this.addSimpleAction(() => {
+            this.enemyBlob.swellSpeed = 5;
+            this.enemyBlob.tile("groggy");
+            this.text = "huh?";
+        }, rand(0.25, 1));
+
+        this.addSimpleAction(() => {
+            // face in direction of notice source
+            this.enemyBlob.facePosition(this.source.pos);
+        }, rand(0.2, 0.8));
+
+        let shouldEarlyExit = false;
+        let wanderDuration = 3;
+
+        if (this.source.isGrenadeLive()) {
+            shouldEarlyExit = rand() > 0.25;
+        } else {
+            wanderDuration = rand(10,15);
+        }
+
+        // if (this.source.isGrenadeExplosion())
+        // {
+        //     wanderDuration = rand(10,15);
+        // }
+
+        if (!shouldEarlyExit) {
+            // maybe move towards target and study item for x seconds
+            const maxDistance = 20;
+            const distanceToSource = max(maxDistance, this.enemyBlob.pos.distance(this.source.pos));
+            const loudness = (maxDistance - distanceToSource) / maxDistance;
+
+            if (rand() < 0.75 + loudness) {
+                {
+                    const action = new ActionHandler();
+                    action.enter = () => {
+                        this.timer.set(wanderDuration);
+                        this.text = "I wonder...";
+                        this.enemyBlob.tile("study");
+                    };
+                    action.isDone = () => {
+                        return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
+                    };
+                    action.do = () => {
+                        this.enemyBlob.facePosition(this.source.pos);
+                        // this.enemyBlob.velocity.x = this.enemyBlob.normalVecToPos(this.source.pos).x * 0.03;
+                        this.enemyBlob.walkOrJumpTowardsTarget(this.enemyBlob.normalVecToPos(this.source.pos));
+                    }
+                    this.add(action);
+                }
+
+                this.addSimpleAction(() => {
+                    if (this.source.isGrenade() && this.source.isObjectAlive()) {
+                        this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
+                    }
+                    else {
+                        this.text = "wtf happened here?";
+
+                        this.addSimpleAction(() => {
+                            this.enemyBlob.tile("groggy");
+                            this.text = "weird...";
+                        }, rand(1, 3));
+                    }
+                }, 3);
+            } // should investigate
+            else {
+                this.addSimpleAction(() => {
+                    this.enemyBlob.tile("groggy");
+                    this.text = "meh...";
+                }, rand(1, 3));
+            }
+        } // should early exit
+    }
+
+    do() {
+        if (this.isDone())
+            return;
+
+        super.do();
+        this.enemyBlob.debugTextAboveMe(this.text);
+    }
+}
+
+
+class Dive1 extends EnemyBlobSequence {
+
+    /**
+     * @param {Enemy3} enemyBlob
+     * @param {NoticeEvent} noticeEvent
+     */
+    constructor(enemyBlob, noticeEvent) {
+        const e = enemyBlob;
+        super(enemyBlob);
+        this.text = "";
+        this.grenadeSource = noticeEvent;
+        this.crawlSpeed = rand(0.002, 0.005);
+        this.shouldGetUp = false;
+
+        this.timer = new Timer(0);
+
+        {
+            const action = new ActionHandler();
+            action.enter = () => {
+                enemyBlob.tile("alarm");
+                this.timer.set();
+                e.angle = PI / 2;
+                e.velocity.y = rand(0.1, 0.2);
+                let xVel = rand(0.1, 0.2);
+
+                if (e.pos.x < noticeEvent.pos.x) {
+                    xVel *= -1;
+                    e.mirror = true;
+                    e.angle *= -1;
+                }
+
+                e.velocity.x += xVel;
+            };
+            action.isDone = () => {
+                const elapsedTime = this.timer.get();
+                return elapsedTime >= 3 || this.shouldGetUp;
+            };
+            action.do = () => {
+                if (this.timer.get() < 1.0) {
+                    e.debugTextAboveMe("GRENADE!");
+                } else {
+                    e.tile("mortified");
+                }
+
+                // crawl away from grenade
+                if (e.groundObject) {
+                    let xVel = this.crawlSpeed;
+
+                    if (e.pos.x < noticeEvent.pos.x) {
+                        xVel *= -1;
+                    }
+                    e.velocity.x += xVel;
+                }
+            }
+            this.add(action);
+        }
+
+        // rest post dive
+        this.addSimpleAction(() => {
+            e.tile("sleeping");
+        }, rand(0.1, 0.3));
+    }
+
+    /**
+     * @param {NoticeEvent} noticeEvent 
+     */
+    notice(noticeEvent) {
+        if (noticeEvent.isGrenadeExplosion()) {
+            this.shouldGetUp = true;
+        }
+    }
+
+    damaged() {
+        this.shouldGetUp = true;
+    }
+
+    exit() {
+        this.enemyBlob.angle = 0; // just to make sure
+        super.exit();
     }
 }

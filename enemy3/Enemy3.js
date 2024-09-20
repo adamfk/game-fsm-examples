@@ -13,14 +13,20 @@ class Enemy3 extends EnemyBlob
         /** The velocity we commanded last time before physics calculations */
         this.attemptedVelocity = vec2();
 
+        // todo_low - we could construct these only when we need them. We don't need them all at the same time.
+        this.charge = new Charge1(this);
         this.dance = new Dance1(this);
         this.waking = new Waking1(this);
         this.lulling = new Lulling1(this);
         this.surprised = new Surprised1(this);
         this.alarm = new Alarm1(this);
 
-        this.chargeTimer = new Timer();
-        this.chargeMaxTime = 0.5;
+        /** @type {NoticeSeq1?} */
+        this.noticeSeq = null;
+
+        /** @type {Dive1?} */
+        this.dive = null;
+
         this.targetVec = vec2();
 
         this.sm = new Enemy3Sm();
@@ -42,45 +48,24 @@ class Enemy3 extends EnemyBlob
 
         // run state machine
         this.sm.dispatchEvent(Enemy3Sm.EventId.DO);
+        this.debugTextBelowMe(Enemy3Sm.stateIdToString(this.sm.stateId));
 
         this.attemptedVelocity = this.velocity.copy();
-    }
-
-    chargeEnter() {
-        this.targetVec = this.normalVecToPlayer();
-        this.chargeTimer.set();
-    }
-
-    chargeDo() {
-        // this.huntPlayer();
-        const chargeRatio = this.chargeTimer.get() / this.chargeMaxTime;
-        this.angle = chargeRatio * PI/2;
-
-        // fire!
-        if (this.isChargeDone()) {
-            // this.velocity = this.normalVecToPlayer(); // THIS IS INSANE!!! YEET MODE!
-            // this.velocity.x = this.normalVecToPlayer().x; // this one keeps updating with the player's position
-            this.velocity.x = this.targetVec.x;
-
-            // slow it down a bit if we are in the air (no friction)
-            if (!this.groundObject) {
-                this.velocity.x *= 0.3;
-            }
-        }
     }
 
     damageEvent() {
         this.sm.dispatchEvent(Enemy3Sm.EventId.DAMAGED);
     }
 
-    chargeExit() {
-        this.angle = 0;
+    /**
+     * Override
+     * @param {NoticeEvent} noticeEvent
+     */
+    noticeEvent(noticeEvent) {
+        this.sm.vars.noticeEvent = noticeEvent;
+        this.sm.dispatchEvent(Enemy3Sm.EventId.NOTICE);
+        super.noticeEvent(noticeEvent);
     }
-
-    isChargeDone() {
-        return this.chargeTimer.get() >= this.chargeMaxTime;
-    }
-
 
     updateStallCount() {
         // if we are moving, zero stall count
@@ -98,7 +83,6 @@ class Enemy3 extends EnemyBlob
     huntPlayer()
     {
         const vecToPlayer = this.normalVecToPlayer();
-
         this.walkOrJumpTowardsTarget(vecToPlayer);
     }
 
@@ -107,7 +91,7 @@ class Enemy3 extends EnemyBlob
     }
 
     alertComrades(radius = 30) {
-        engineObjectsCallback(this.pos, radius, (o)=>
+        engineObjectsCallback(this.pos, radius, (/** @type {this} */ o)=>
         {
             if (o instanceof Enemy3 && o !== this) {
                 // console.log("alerting comrade", this, o);
@@ -117,11 +101,15 @@ class Enemy3 extends EnemyBlob
     }
 
     /**
-     * @param {Vector2} targetVec
+     * @param {Vector2} normalTargetVec
      */
-    walkOrJumpTowardsTarget(targetVec) {
+    walkOrJumpTowardsTarget(normalTargetVec) {
+        if (!normalTargetVec) {
+            return;
+        }
+
         if (!this.groundObject) {
-            this.velocity.x += targetVec.x * .001;
+            this.velocity.x += normalTargetVec.x * .001;
         }
 
         else {
@@ -130,12 +118,12 @@ class Enemy3 extends EnemyBlob
             // this.debugTextAboveMe("stall count " + this.stallFrameCount);
             // on ground. randomly jump towards player
             if (rand() < 0.01 + scaledStallCount) {
-                this.jumpTowards(targetVec, scaledStallCount);
+                this.jumpTowards(normalTargetVec, scaledStallCount);
             }
 
             else {
                 // if not jumping, march towards player
-                this.velocity = targetVec.multiply(vec2(.07, .0));
+                this.velocity = normalTargetVec.multiply(vec2(.07, .0));
             }
         }
     }

@@ -24,6 +24,7 @@ class Enemy0 extends EnemyBlob
         
         // run state machine
         this.sm.dispatchEvent(Enemy0Sm.EventId.DO);
+        this.debugTextBelowMe(Enemy0Sm.stateIdToString(this.sm.stateId));
     }
 
     huntPlayer()
