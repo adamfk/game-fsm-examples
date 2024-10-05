@@ -33,15 +33,4 @@ class Player extends Character
         super.kill();
         cameraFollowResetTimer();
     }
-
-    /**
-     * This shouldn't be needed, but it is for some reason. Player extends Character, which extends GameObject.
-     * This just makes intellisense happy.
-     * @returns {GameObject}
-     */
-    asGameObject() {
-        /** @type {any} */
-        const temp = this;
-        return temp;
-    }
 }

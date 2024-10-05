@@ -4,10 +4,8 @@
         "target": "es6",
         "baseUrl": ".",
         "paths": {
-            // Add any custom path mappings here
         }
     },
     "exclude": [
-        "wip"
     ]
 }
