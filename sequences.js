@@ -94,10 +94,6 @@ class Dance1 extends EnemyBlobSequence {
     }
 
     do() {
-        // if (!this.gameObject.inDebugArea()) {
-        //     return;
-        // }
-
         if (this.isDone()) {
             this.enter();
         }
@@ -109,7 +105,6 @@ class Dance1 extends EnemyBlobSequence {
 
         this.enemyBlob.velocity = vec2();
         this.enemyBlob.angle = 0;
-        // this.gameObject.mirror = false; // leave as is
     }
 
     /**
@@ -157,8 +152,8 @@ class Dance1 extends EnemyBlobSequence {
 
 class Waking1 extends EnemyBlobSequence {
     /**
- * @param {EnemyBlob} enemyBlob
- */
+     * @param {EnemyBlob} enemyBlob
+     */
     constructor(enemyBlob) {
         super(enemyBlob);
 

@@ -43,14 +43,11 @@ class Enemy2 extends EnemyBlob
     }
 
     chargeDo() {
-        // this.huntPlayer();
         const chargeRatio = this.chargeTimer.get() / this.chargeMaxTime;
         this.angle = chargeRatio * PI/2;
 
         // fire!
         if (this.isChargeDone()) {
-            // this.velocity = this.normalVecToPlayer(); // THIS IS INSANE!!! YEET MODE!
-            // this.velocity.x = this.normalVecToPlayer().x; // this one keeps updating with the player's position
             this.velocity.x = this.targetVec.x;
 
             // slow it down a bit if we are in the air (no friction)
