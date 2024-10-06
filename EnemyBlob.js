@@ -27,6 +27,7 @@ class EnemyBlob extends Enemy {
         this.setCollision(true, false);
         this.disableAttack = false;
         this.takesExtraDamage = false;
+        this.elasticity = 0.4; // enemies bounce off of ground (and walls) a bit
 
         /**
          * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"}
