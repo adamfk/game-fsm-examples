@@ -18,7 +18,7 @@ class Enemy0 extends EnemyBlob
      * Update the object transform and physics, called automatically by engine once each frame.
      */
     update()
-    {      
+    {
         // run state machine and show state
         this.sm.dispatchEvent(Enemy0Sm.EventId.DO);
         this.debugTextBelowMe(Enemy0Sm.stateIdToString(this.sm.stateId));
@@ -31,11 +31,16 @@ class Enemy0 extends EnemyBlob
      */
     huntPlayer()
     {
-        const normVecToPlayer = this.normalVecToPlayer();
+        const normVecToPlayer = this.normalVecToPlayer(); // get normalized vector to player
+        let velocityScale = 0.01;
 
-        const groundScale = 0.01;
-        const airScale = 0.001;  // There's no friction in the air, so we need to slow down the velocity
-        const velocityScale = this.groundObject ? groundScale : airScale;
+        if (!this.groundObject)
+        {
+            // there's no friction in the air to counteract the velocity
+            // so we need to scale it down to prevent the enemy from flying right at the player
+            velocityScale /= 10;
+        }
+
         this.velocity.x += normVecToPlayer.x * velocityScale;
     }
 }
