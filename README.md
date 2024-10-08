@@ -10,22 +10,26 @@ Sometimes the enemy AI find grenades deeply fascinating and will get up close to
 
 <br>
 
-# Open Source Visual Modelling
-Enemy AI state machines can get pretty complicated, so we are going to use [StateSmith](https://github.com/StateSmith/StateSmith) to visually model them. 
+# Open Source Visual Tool for State Machines
+Enemy AI state machines can get pretty complicated, so we are going to use [StateSmith](https://github.com/StateSmith/StateSmith).
 
-StateSmith is a free and open source tool that supports 7 programming languages: `C`, `C++`, `C#`, `JavaScript`, `TypeScript`, `Java`, and `Python` (more coming). 
+StateSmith is a free and open source tool that generates state machine code from diagrams. It currently supports 7 programming languages: `C#`, `C++`, `C`, `Java`, `JavaScript`, `TypeScript`, and `Python` (more coming). 
 
-It also has zero dependencies and can work with any game engine or framework with a supported language.
+It also has zero dependencies and can work with any game engine or framework (using one of the above languages).
 
 Full disclosure: I'm the author of StateSmith.
 
 ![](docs/langs.png)
 
-With StateSmith, you can visually model your state machines with draw.io or PlantUML and then generate code for your favorite language.
+With StateSmith, you can visually model your state machines with `draw.io` or `PlantUML` and then generate code for your favorite language. It is super useful for large and/or complex state machines. 
 
 ![image](https://github.com/user-attachments/assets/0393e861-ffb2-4b92-852d-79e2532404d8)
 
-This example repo focuses on enemy AI, but you can use StateSmith for any state machine you like. It's great for game development, IoT, robotics, and more. It is also handy for smaller state machines that have lots of transitions between states like a game character with many animations. One nice thing about draw.io and StateSmith is that you can embed images/gifs in your diagrams if you want.
+I specifically made StateSmith when I was faced with a very large embedded systems design that required 300+ hierarchical states. One of the StateSmith features that allows you to manage large state machines is the ability to collapse states like `IDLE` and `HUNTING` in the above diagram to keep things organized. Without this feature, we would have a design like below. It still works, but it can be challenging to understand as it is too large for a screen. It's also time consuming to maintain as you need to move states around to make room for new states. The above diagram is much easier to follow and maintain.
+
+![](docs/e3-expanded-20p.png)
+
+This example repo focuses on enemy AI, but you can use StateSmith for any state machine you like. It's great for game development, IoT, robotics, and more. It is also handy for smaller state machines that have lots of transitions between states like a game character with many animations. One nice thing about `draw.io` and StateSmith is that you can embed images/gifs in your diagrams if you want.
 
 ![mario](https://github.com/user-attachments/assets/f5835d30-88da-4e5e-8085-a8a31d08cd75)
 
