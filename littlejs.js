@@ -2707,11 +2707,13 @@ function inputUpdatePost()
     // handle remapping wasd keys to directions
     function remapKey(c)
     {
-        return inputWASDEmulateDirection ? 
+        let result = inputWASDEmulateDirection ?
+            c == 'Space' ? 'ArrowUp' :
             c == 'KeyW' ? 'ArrowUp' : 
             c == 'KeyS' ? 'ArrowDown' : 
             c == 'KeyA' ? 'ArrowLeft' : 
             c == 'KeyD' ? 'ArrowRight' : c : c;
+        return result;
     }
 }
 
