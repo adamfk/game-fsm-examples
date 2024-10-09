@@ -1,6 +1,6 @@
 <mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8" pages="3">
   <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-    <mxGraphModel dx="10630" dy="4350" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3633" dy="713" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -401,11 +401,14 @@
         <mxCell id="X4z_x5mKJALudi66wqIo-43" value="[e.dive.isDone()]" style="edgeStyle=none;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Lucida Console;fontSize=12;fontColor=default;labelBackgroundColor=default;endArrow=classic;entryX=0.88;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.81;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="X4z_x5mKJALudi66wqIo-40" target="Q9ECF8ZZ4cc2KDeR4uCh-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="D-9wtC3oxZY3BoH8kIxc-32" value="The below special string will cause ss.cli to ignore this file:&lt;br&gt;statesmith.cli-ignore-this-file" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#303000;align=left;spacingLeft=5;verticalAlign=middle;fontFamily=Helvetica;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-2390" y="40" width="475" height="56.25" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="e6KzhQqeHZ0kGev2914D" name="config">
-    <mxGraphModel dx="1434" dy="836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1991" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
