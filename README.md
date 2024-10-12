@@ -173,9 +173,16 @@ By defining the `exit` behavior for the `CHARGE` state, we can ensure that the b
 <br>
 
 ## Level 3: high level behaviors
-Here is where the blobs start to come to life.
+Here is where the blobs start to come to life! They have 15 high level behaviors, call for help, and dodge grenades.
 
 > **[🕹️ TRY ENEMY 3 ONLINE HERE](https://adamfk.github.io/game-fsm-examples/?enemyId=3)**
+> - `WASD` to move
+> - left click to shoot (or `z` key)
+> - right click to dodge/roll
+> - middle click to throw a grenade (or `c` key)
+> - debugging keys: `t` = drop test crate, `e` = drop enemy, `b` = make explosion, `m` = move player to mouse, `u` = toggle stadium damage, mouse scroll = zoom
+
+![shiny-and-dive](https://github.com/user-attachments/assets/26f01e71-9ec5-43c7-b4e0-1ca9c1f47782)
 
 We build on the previous strategy of mixing simple hand coded behaviors and StateSmith generated states. Many of these simple behaviors are sequences so we can define them simply with some helpers.
 
@@ -199,10 +206,9 @@ This sequence is run by the `WAKING` state.
 
 ![](docs/e3-waking.png)
 
+To understand `Enemy3Sm`, you'll need to understand exit points and how to work with collapsed states. https://www.youtube.com/watch?v=9Qd6zVCcB_Y
 
-TODO:
-- explain enter and exit points
-- explain how to enter/exit collapsed states
+There's a lot going on in the `Enemy3` state machine. I'll add more details as soon as I can.
 
 
 <br>
