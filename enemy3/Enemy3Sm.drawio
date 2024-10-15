@@ -1,11 +1,11 @@
 <mxfile host="65bd71144e" scale="1.2" border="0" pages="3">
     <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-        <mxGraphModel dx="1303" dy="1006" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1598" dy="1179" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="5WbJzgnFZzQuHIaXEJV7-1" value="&lt;span style=&quot;color: rgb(250, 250, 250); font-family: &amp;quot;Lucida Console&amp;quot;; font-size: 14px; font-weight: 700; text-wrap: nowrap;&quot;&gt;$STATEMACHINE : {fileName}&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;connectable=0;allowArrows=0;" parent="1" vertex="1">
-                    <mxGeometry x="202.5" y="60" width="290" height="35" as="geometry"/>
+                    <mxGeometry x="200" y="70" width="290" height="35" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="via exit enemy_win" style="shape=connector;rounded=0;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=default;strokeColor=default;fontFamily=Lucida Console;fontSize=12;fontColor=default;endArrow=classic;" parent="1" source="Q9ECF8ZZ4cc2KDeR4uCh-3" target="3" edge="1">
                     <mxGeometry x="-0.3333" relative="1" as="geometry">
@@ -149,8 +149,8 @@
                         <mxRectangle x="640" y="180" width="150" height="70" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="EKqmGuzHJmko1qDDIJdT-37" value="&lt;font color=&quot;#00cc00&quot;&gt;enter&lt;/font&gt;&amp;nbsp;/ timer.set(rand(3,8));&lt;br&gt;&lt;font color=&quot;#007fff&quot;&gt;do&lt;/font&gt;&amp;nbsp;/ {&lt;br&gt;&lt;div&gt;&lt;/div&gt;&amp;nbsp; e.debugCircle(1, &quot;#0F08&quot;);&amp;nbsp;&lt;br&gt;&amp;nbsp; e.debugTextAboveMe(&quot;zzz...&quot;);&lt;br&gt;&lt;div&gt;}&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#cc0000&quot;&gt;exit&lt;/font&gt;&amp;nbsp;/&amp;nbsp;&lt;br&gt;&lt;/div&gt;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;html=1;fontSize=12;fontColor=default;labelBackgroundColor=default;" parent="EKqmGuzHJmko1qDDIJdT-36" vertex="1" connectable="0">
-                    <mxGeometry y="30" width="250" height="100" as="geometry"/>
+                <mxCell id="EKqmGuzHJmko1qDDIJdT-37" value="&lt;font color=&quot;#00cc00&quot;&gt;enter&lt;/font&gt;&amp;nbsp;/ timer.set(rand(3,8));&lt;br&gt;&lt;font color=&quot;#007fff&quot;&gt;do&lt;/font&gt;&amp;nbsp;/ {&lt;br&gt;&lt;div&gt;&lt;/div&gt;&amp;nbsp; e.debugCircle(1, &quot;#0F08&quot;);&amp;nbsp;&lt;br&gt;&amp;nbsp; e.debugTextAboveMe(&quot;zzz...&quot;);&lt;br&gt;&lt;div&gt;}&lt;/div&gt;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;html=1;fontSize=12;fontColor=default;labelBackgroundColor=default;" parent="EKqmGuzHJmko1qDDIJdT-36" vertex="1" connectable="0">
+                    <mxGeometry y="30" width="250" height="90" as="geometry"/>
                 </mxCell>
                 <mxCell id="EKqmGuzHJmko1qDDIJdT-38" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="Q9ECF8ZZ4cc2KDeR4uCh-1" source="EKqmGuzHJmko1qDDIJdT-33" target="EKqmGuzHJmko1qDDIJdT-36" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -166,8 +166,8 @@
                         <mxRectangle x="640" y="180" width="150" height="70" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="EKqmGuzHJmko1qDDIJdT-40" value="&lt;font color=&quot;#00cc00&quot;&gt;enter&lt;/font&gt;&amp;nbsp;/ timer.set(rand(0.5, 2));&lt;br&gt;&lt;font color=&quot;#007fff&quot;&gt;do&lt;/font&gt;&amp;nbsp;/ {&lt;br&gt;&lt;div&gt;&lt;/div&gt;&amp;nbsp; e.debugTextAboveMe(&quot;zz..&quot;);&lt;br&gt;&lt;div&gt;}&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#cc0000&quot;&gt;exit&lt;/font&gt;&amp;nbsp;/&amp;nbsp;&lt;br&gt;&lt;/div&gt;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;html=1;fontSize=12;fontColor=default;labelBackgroundColor=default;" parent="EKqmGuzHJmko1qDDIJdT-39" vertex="1" connectable="0">
-                    <mxGeometry y="30" width="260" height="90" as="geometry"/>
+                <mxCell id="EKqmGuzHJmko1qDDIJdT-40" value="&lt;font color=&quot;#00cc00&quot;&gt;enter&lt;/font&gt;&amp;nbsp;/ timer.set(rand(0.5, 2));&lt;br&gt;&lt;font color=&quot;#007fff&quot;&gt;do&lt;/font&gt;&amp;nbsp;/ {&lt;br&gt;&lt;div&gt;&lt;/div&gt;&amp;nbsp; e.debugTextAboveMe(&quot;zz..&quot;);&lt;br&gt;&lt;div&gt;}&lt;/div&gt;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;html=1;fontSize=12;fontColor=default;labelBackgroundColor=default;" parent="EKqmGuzHJmko1qDDIJdT-39" vertex="1" connectable="0">
+                    <mxGeometry y="30" width="260" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="WeFEacNSxy13Kq7vbZp0-32" value="exit : 1" style="fontFamily=Lucida Console;align=center;verticalAlign=middle;shape=ellipse;aspect=fixed;resizable=0;rotatable=0;labelPosition=center;verticalLabelPosition=top;strokeColor=#b11f1f;strokeWidth=4;fillColor=#FFFFFF;gradientColor=#d4d4d4cc;" parent="Q9ECF8ZZ4cc2KDeR4uCh-1" vertex="1">
                     <mxGeometry x="510" y="580" width="30" height="30" as="geometry"/>
@@ -290,12 +290,6 @@
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
-                </mxCell>
-                <mxCell id="to1o-HG0yCygmVUvUkdh-35" value="move towards source of noise&lt;div&gt;&lt;/div&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#303000;align=left;spacingLeft=5;verticalAlign=middle;fontFamily=Helvetica;" parent="SychlOWpJkVZpRfHJU1n-47" vertex="1">
-                    <mxGeometry x="1330" y="217.5" width="220" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="to1o-HG0yCygmVUvUkdh-32" value="&quot;huh?&quot;&lt;div&gt;&lt;/div&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#303000;align=left;spacingLeft=5;verticalAlign=middle;fontFamily=Helvetica;" parent="SychlOWpJkVZpRfHJU1n-47" vertex="1">
-                    <mxGeometry x="1330" y="170" width="100" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="X4z_x5mKJALudi66wqIo-32" value="NOTICE" style="edgeStyle=none;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.88;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.69;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Lucida Console;fontSize=12;fontColor=default;labelBackgroundColor=default;endArrow=classic;" parent="SychlOWpJkVZpRfHJU1n-47" source="hdPofdkxEfvwtyw9cPgT-24" target="SychlOWpJkVZpRfHJU1n-65" edge="1">
                     <mxGeometry x="-0.8496" y="-1" relative="1" as="geometry">
@@ -450,11 +444,14 @@
                 <mxCell id="X4z_x5mKJALudi66wqIo-43" value="[e.dive.isDone()]" style="edgeStyle=none;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.81;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Lucida Console;fontSize=12;fontColor=default;labelBackgroundColor=default;endArrow=classic;exitX=0.81;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="X4z_x5mKJALudi66wqIo-40" target="Q9ECF8ZZ4cc2KDeR4uCh-3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
+                <mxCell id="WzgdhA9RYf6NY988Ehm3-32" value="This design uses&amp;nbsp;&lt;b&gt;exit points&lt;/b&gt; and &lt;b&gt;visually collapsed states&lt;/b&gt;.&lt;br&gt;See this tutorial:&amp;nbsp;&lt;a href=&quot;https://www.youtube.com/watch?v=9Qd6zVCcB_Y&quot;&gt;https://www.youtube.com/watch?v=9Qd6zVCcB_Y&lt;/a&gt;&amp;nbsp;&lt;br&gt;&lt;div&gt;&lt;/div&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#303000;align=left;spacingLeft=5;verticalAlign=middle;fontFamily=Helvetica;" vertex="1" parent="1">
+                    <mxGeometry x="170" y="-17.5" width="450" height="56.25" as="geometry"/>
+                </mxCell>
             </root>
         </mxGraphModel>
     </diagram>
     <diagram id="e6KzhQqeHZ0kGev2914D" name="config">
-        <mxGraphModel dx="1303" dy="606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+        <mxGraphModel dx="1598" dy="779" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -473,7 +470,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="lSXSN223U8W1Hh3X7HAb" name="$notes shapes &amp; tips">
-        <mxGraphModel dx="1646" dy="1670" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+        <mxGraphModel dx="1598" dy="1579" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>

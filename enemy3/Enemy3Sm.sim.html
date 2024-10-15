@@ -284,8 +284,6 @@ state IDLE {
 
                         DEEP_SLEEP : do / #123; e.debugCircle(1, "#0F08")#59; \ne.debugTextAboveMe("zzz...")#59; #125;
 
-                        DEEP_SLEEP : exit / #123;  #125;
-
                         %% Initial state name as "." so that it fits in black circle shape.
                         %% See https://github.com/StateSmith/StateSmith/issues/404
                         state "." as SLEEPING.(InitialState)
@@ -297,8 +295,6 @@ state IDLE {
                         ABOUT_TO_STIR : enter / #123; timer.set(rand(0.5, 2))#59; #125;
 
                         ABOUT_TO_STIR : do / #123; e.debugTextAboveMe("zz..")#59; #125;
-
-                        ABOUT_TO_STIR : exit / #123;  #125;
 
                         state "$exit_pt.1" as SLEEPING.(ExitPoint)(1)
 
@@ -2528,12 +2524,6 @@ evaluateGuard = null;
     #ABOUT_TO_STIR_exit()
     {
         // ABOUT_TO_STIR behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for ABOUT_TO_STIR
-        
-        // ABOUT_TO_STIR behavior
         // uml: exit / { this.tracer?.exitState('ABOUT_TO_STIR'); }
         {
             // Step 1: execute action `this.tracer?.exitState('ABOUT_TO_STIR');`
@@ -2619,12 +2609,6 @@ evaluateGuard = null;
     
     #DEEP_SLEEP_exit()
     {
-        // DEEP_SLEEP behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for DEEP_SLEEP
-        
         // DEEP_SLEEP behavior
         // uml: exit / { this.tracer?.exitState('DEEP_SLEEP'); }
         {

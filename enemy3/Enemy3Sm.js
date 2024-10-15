@@ -1715,12 +1715,6 @@ class Enemy3Sm
     
     #ABOUT_TO_STIR_exit()
     {
-        // ABOUT_TO_STIR behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for ABOUT_TO_STIR
-        
         this.stateId = Enemy3Sm.StateId.SLEEPING;
     }
     
@@ -1791,12 +1785,6 @@ class Enemy3Sm
     
     #DEEP_SLEEP_exit()
     {
-        // DEEP_SLEEP behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for DEEP_SLEEP
-        
         this.stateId = Enemy3Sm.StateId.SLEEPING;
     }
     
