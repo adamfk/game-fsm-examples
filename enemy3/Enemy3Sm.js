@@ -50,9 +50,9 @@ class Enemy3Sm
     // Variables. Can be used for inputs, outputs, user variables...
     vars = {
         timer: new Timer(0),
-        /** @type{Enemy3|null} */
+        /** @type {Enemy3} */
         e: null, // need to set this to instance of Enemy before calling start()
-        /** @type{NoticeEvent|null} */
+        /** @type {NoticeEvent} */
         noticeEvent: null,
     };
     

@@ -30,8 +30,9 @@ class Enemy1Sm
     
     // Variables. Can be used for inputs, outputs, user variables...
     vars = {
+        // this timer is just used by state machine so we can declare it here if we want
         timer: new Timer(0),
-        /** @type{Enemy1|null} */
+        /** @type {Enemy1} */
         e: null, // need to set this to instance of Enemy before calling start()
     };
     

@@ -34,7 +34,7 @@ class Enemy2Sm
     // Variables. Can be used for inputs, outputs, user variables...
     vars = {
         timer: new Timer(0),
-        /** @type{Enemy2|null} */
+        /** @type {Enemy2} */
         e: null, // need to set this to instance of Enemy before calling start()
     };
     

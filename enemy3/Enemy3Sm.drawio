@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e" scale="1.2" border="0" pages="3">
     <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-        <mxGraphModel dx="1838" dy="606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1303" dy="1006" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -454,7 +454,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="e6KzhQqeHZ0kGev2914D" name="config">
-        <mxGraphModel dx="1434" dy="836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+        <mxGraphModel dx="1303" dy="606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -463,7 +463,7 @@
                         <mxRectangle x="40" y="40" width="170" height="70" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="AQYHgrLb52N4u3SG62Hm-2" value="[RenderConfig]&#10;AutoExpandedVars = &quot;&quot;&quot;&#10;    timer: new Timer(0),&#10;    /** @type{Enemy3|null} */&#10;    e: null, // need to set this to instance of Enemy before calling start()&#10;&#10;    /** @type{NoticeEvent|null} */&#10;    noticeEvent: null,&#10;    &quot;&quot;&quot;&#10;&#10;[SmRunnerSettings]&#10;transpilerId = &quot;JavaScript&quot;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="AQYHgrLb52N4u3SG62Hm-1" vertex="1" connectable="0">
+                <mxCell id="AQYHgrLb52N4u3SG62Hm-2" value="[RenderConfig]&#10;AutoExpandedVars = &quot;&quot;&quot;&#10;    timer: new Timer(0),&#10;    /** @type {Enemy3} */&#10;    e: null, // need to set this to instance of Enemy before calling start()&#10;&#10;    /** @type {NoticeEvent} */&#10;    noticeEvent: null,&#10;    &quot;&quot;&quot;&#10;&#10;[SmRunnerSettings]&#10;transpilerId = &quot;JavaScript&quot;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="AQYHgrLb52N4u3SG62Hm-1" vertex="1" connectable="0">
                     <mxGeometry y="30" width="580" height="190" as="geometry"/>
                 </mxCell>
                 <mxCell id="Rtzr6oL3nyDmr5cCv5HC-1" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 12px;&quot;&gt;Feel free to delete the `$CONFIG : toml` node if you don't want it.&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0); font-size: 12px;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 12px;&quot;&gt;Details here:&amp;nbsp;&lt;/span&gt;&lt;a style=&quot;font-size: 12px;&quot; href=&quot;https://github.com/StateSmith/StateSmith/issues/335&quot;&gt;https://github.com/StateSmith/StateSmith/issues/335&lt;/a&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#2B2B00;align=left;spacingLeft=6;" parent="1" vertex="1">
