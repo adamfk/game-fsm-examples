@@ -29,7 +29,6 @@ class Enemy0Sm
     
     // Variables. Can be used for inputs, outputs, user variables...
     vars = {
-        timer: new Timer(0),
         e: null, // need to set this to instance of Enemy before calling start()
     };
     
