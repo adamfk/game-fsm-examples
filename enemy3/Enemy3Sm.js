@@ -822,8 +822,8 @@ class Enemy3Sm
         } // end of behavior for HUNT
         
         // HUNT behavior
-        // uml: do [e.playerDist() < 4 &&\nrand() < 0.02] TransitionTo(CHARGE)
-        if (this.vars.e.playerDist() < 4 &&rand() < 0.02)
+        // uml: do [e.playerDist() < 4 && \nrand() < 0.02] TransitionTo(CHARGE)
+        if (this.vars.e.playerDist() < 4 && rand() < 0.02)
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#HUNT_exit();
@@ -1290,8 +1290,8 @@ class Enemy3Sm
         let consume_event = false;
         
         // DANCE behavior
-        // uml: 1. do [timer.elapsed() &&\ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)
-        if (this.vars.timer.elapsed() &&this.vars.e.dance.isDone())
+        // uml: 1. do [timer.elapsed() && \ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)
+        if (this.vars.timer.elapsed() && this.vars.e.dance.isDone())
         {
             // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition).
             this.#DANCE_exit();
@@ -1441,8 +1441,8 @@ class Enemy3Sm
             // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [e.playerDist() < 3 ||\nrand() < 0.5] TransitionTo(DANCE)
-            if (this.vars.e.playerDist() < 3 ||rand() < 0.5)
+            // uml: [e.playerDist() < 3 || \nrand() < 0.5] TransitionTo(DANCE)
+            if (this.vars.e.playerDist() < 3 || rand() < 0.5)
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
@@ -1814,8 +1814,8 @@ class Enemy3Sm
         } // end of behavior for DEEP_SLEEP
         
         // DEEP_SLEEP behavior
-        // uml: do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)
-        if (this.vars.timer.elapsed() ||this.vars.e.playerDist() < 1)
+        // uml: do [timer.elapsed() || \ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)
+        if (this.vars.timer.elapsed() || this.vars.e.playerDist() < 1)
         {
             // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition).
             this.#DEEP_SLEEP_exit();

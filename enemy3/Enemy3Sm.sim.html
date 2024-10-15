@@ -452,7 +452,7 @@ HUNTING.(ExitPoint)(idle) --> IDLE
 
 HUNTING.(ExitPoint)(enemy_win) --> ENEMY_WIN
 
-HUNT --> CHARGE : do [e.playerDist() < 4 &&\nrand() < 0.02]
+HUNT --> CHARGE : do [e.playerDist() < 4 && \nrand() < 0.02]
 
 HUNT --> CALL_FOR_BACKUP : do [rand() < 0.001]
 
@@ -470,7 +470,7 @@ NON_AGRO --> NON_AGRO.(ExitPoint)(surprised) : DAMAGED
 
 SLEEPING --> NOTICE_NOISE : NOTICE
 
-DEEP_SLEEP --> ABOUT_TO_STIR : do [timer.elapsed() ||\ne.playerDist() < 1]
+DEEP_SLEEP --> ABOUT_TO_STIR : do [timer.elapsed() || \ne.playerDist() < 1]
 
 SLEEPING.(InitialState) --> DEEP_SLEEP
 
@@ -482,13 +482,13 @@ CHECK_VISION --> NON_AGRO.(ExitPoint)(surprised) : do [e.canSeePlayer(6)]
 
 CHECK_VISION --> NOTICE_NOISE : NOTICE
 
-DANCE --> FALLING_A_SLEEP : 1. do [timer.elapsed() &&\ne.dance.isDone()]
+DANCE --> FALLING_A_SLEEP : 1. do [timer.elapsed() && \ne.dance.isDone()]
 
 WAKING --> CHECK_VISION.(ChoicePoint)() : 1. do [e.waking.isDone()]
 
 FALLING_A_SLEEP --> SLEEPING : 1. do [e.lulling.isDone()]
 
-CHECK_VISION.(ChoicePoint)() --> DANCE : [e.playerDist() < 3 ||\nrand() < 0.5]
+CHECK_VISION.(ChoicePoint)() --> DANCE : [e.playerDist() < 3 || \nrand() < 0.5]
 
 CHECK_VISION.(ChoicePoint)() --> FALLING_A_SLEEP : else
 
@@ -1475,8 +1475,8 @@ evaluateGuard = null;
         } // end of behavior for HUNT
         
         // HUNT behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 &&\nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 &&\nrand() < 0.02] TransitionTo(CHARGE)")] / { this.tracer?.edgeTransition("edge5"); } TransitionTo(CHARGE)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 &&\nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 &&\nrand() < 0.02] TransitionTo(CHARGE)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 && \nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 && \nrand() < 0.02] TransitionTo(CHARGE)")] / { this.tracer?.edgeTransition("edge5"); } TransitionTo(CHARGE)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 && \nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 && \nrand() < 0.02] TransitionTo(CHARGE)"))
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#HUNT_exit();
@@ -2027,8 +2027,8 @@ evaluateGuard = null;
         let consume_event = false;
         
         // DANCE behavior
-        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() &&\ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)")] / { this.tracer?.edgeTransition("edge20"); } TransitionTo(FALLING_A_SLEEP)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() &&\ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)"))
+        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() && \ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() && \ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)")] / { this.tracer?.edgeTransition("edge20"); } TransitionTo(FALLING_A_SLEEP)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() && \ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() && \ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)"))
         {
             // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition).
             this.#DANCE_exit();
@@ -2210,8 +2210,8 @@ evaluateGuard = null;
             // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 ||\nrand() < 0.5] TransitionTo(DANCE)")] / { this.tracer?.edgeTransition("edge23"); } TransitionTo(DANCE)
-            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 ||\nrand() < 0.5] TransitionTo(DANCE)"))
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 || \nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 || \nrand() < 0.5] TransitionTo(DANCE)")] / { this.tracer?.edgeTransition("edge23"); } TransitionTo(DANCE)
+            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 || \nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 || \nrand() < 0.5] TransitionTo(DANCE)"))
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
@@ -2648,8 +2648,8 @@ evaluateGuard = null;
         } // end of behavior for DEEP_SLEEP
         
         // DEEP_SLEEP behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)")] / { this.tracer?.edgeTransition("edge14"); } TransitionTo(ABOUT_TO_STIR)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() || \ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() || \ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)")] / { this.tracer?.edgeTransition("edge14"); } TransitionTo(ABOUT_TO_STIR)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() || \ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() || \ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)"))
         {
             // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition).
             this.#DEEP_SLEEP_exit();
