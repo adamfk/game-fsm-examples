@@ -172,6 +172,21 @@ By defining the `exit` behavior for the `CHARGE` state, we can ensure that the b
 
 <br>
 
+## Deeply Customized State Machines
+If you have a pattern that you use often, you can leverage advanced StateSmith capabilities that allow you to transform a state machine graph during code generation. This essentially allows you to create your own custom state machine DSL (Domain Specific Language). You can also add/remove states, transitions, and actions.
+
+For example, instead of essentially proxying triggers like `enter` to `e.chargeEnter()`, `do` to `e.chargeDo()`, and `exit` to `e.chargeExit()` you could simply write `EDX / proxy()` and use some custom scripting to accomplish the same thing.
+
+![](docs/charge-dsl-1.png)
+
+Your diagram could look something like this (a few ideas):
+
+![](docs/dsl-bigger.png)
+
+If you are interested in this, let me know and I can help you get started.
+
+<br>
+
 ## Level 3: high level behaviors
 Here is where the blobs start to come to life! They have 15 high level behaviors, call for help, and dodge grenades.
 
