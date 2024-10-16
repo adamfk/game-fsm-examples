@@ -1,6 +1,10 @@
 'use strict';
 class Enemy extends GameObject {
-    
+    /**
+     * if we are moving slower than this, we are considered stalled (bumping into a wall).
+     * This value is impacted by enemy elasticity setting. Use 0.001 for enemies with no elasticity.
+     */
+    stallVelocityThreshold = 0.001;
 
     /**
      * @param {Vector2} pos

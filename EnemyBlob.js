@@ -27,6 +27,7 @@ class EnemyBlob extends Enemy {
         this.setCollision(true, false);
         this.disableAttack = false;
         this.takesExtraDamage = false;
+        // this.elasticity = 0.4; // enemies bounce off of ground (and walls) a bit. Messes up jumping over walls (because they bounce back).
 
         /**
          * @type {"awake" | "sleeping" | "mad" | "chomp" | "hurt" | "groggy" | "surprised" | "alarm" | "study" | "mortified"}
@@ -44,7 +45,7 @@ class EnemyBlob extends Enemy {
         if (isOverlapping(this.pos, this.size, player.pos, player.size)) {
             // if player is above enemy, they damage the enemy and bounce up
             if (player.pos.y > this.pos.y + this.size.y / 2) {
-                this.damage(1, player.asGameObject());
+                this.damage(1, player);
                 cameraFollowResetTimer();
                 player.velocity.y = 0.1; // less camera shake
                 this.velocity.y = -0.02; // make enemy bounce back. Important so that high velocity enemy jump doesn't go through the player

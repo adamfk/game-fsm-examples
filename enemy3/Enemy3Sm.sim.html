@@ -218,6 +218,10 @@ stateDiagram
 
 state HUNTING {
 
+        state "$exit_pt.idle" as HUNTING.(ExitPoint)(idle)
+
+        state "$exit_pt.enemy_win" as HUNTING.(ExitPoint)(enemy_win)
+
         HUNT
 
         HUNT : HUNT
@@ -228,7 +232,19 @@ state HUNTING {
 
         HUNT : exit / #123;  #125;
 
-        state "$initial_state" as HUNTING.(InitialState)
+        %% Initial state name as "." so that it fits in black circle shape.
+        %% See https://github.com/StateSmith/StateSmith/issues/404
+        state "." as HUNTING.(InitialState)
+
+        CHARGE
+
+        CHARGE : CHARGE
+
+        CHARGE : enter / #123; e.charge.enter()#59; #125;
+
+        CHARGE : do / #123; e.charge.do()#59; #125;
+
+        CHARGE : exit / #123; e.charge.exit()#59; #125;
 
         CALL_FOR_BACKUP
 
@@ -241,20 +257,6 @@ state HUNTING {
         CALL_FOR_BACKUP : do / #123; e.alarm.do()#59; #125;
 
         CALL_FOR_BACKUP : exit / #123; e.alarm.exit()#59; #125;
-
-        state "$exit_pt.idle" as HUNTING.(ExitPoint)(idle)
-
-        state "$exit_pt.enemy_win" as HUNTING.(ExitPoint)(enemy_win)
-
-        CHARGE
-
-        CHARGE : CHARGE
-
-        CHARGE : enter / #123; e.charge.enter()#59; #125;
-
-        CHARGE : do / #123; e.charge.do()#59; #125;
-
-        CHARGE : exit / #123; e.charge.exit()#59; #125;
 
 }
 
@@ -282,9 +284,9 @@ state IDLE {
 
                         DEEP_SLEEP : do / #123; e.debugCircle(1, "#0F08")#59; \ne.debugTextAboveMe("zzz...")#59; #125;
 
-                        DEEP_SLEEP : exit / #123;  #125;
-
-                        state "$initial_state" as SLEEPING.(InitialState)
+                        %% Initial state name as "." so that it fits in black circle shape.
+                        %% See https://github.com/StateSmith/StateSmith/issues/404
+                        state "." as SLEEPING.(InitialState)
 
                         ABOUT_TO_STIR
 
@@ -293,8 +295,6 @@ state IDLE {
                         ABOUT_TO_STIR : enter / #123; timer.set(rand(0.5, 2))#59; #125;
 
                         ABOUT_TO_STIR : do / #123; e.debugTextAboveMe("zz..")#59; #125;
-
-                        ABOUT_TO_STIR : exit / #123;  #125;
 
                         state "$exit_pt.1" as SLEEPING.(ExitPoint)(1)
 
@@ -338,11 +338,15 @@ state IDLE {
 
                         state CHECK_VISION.(ChoicePoint)() <<choice>>
 
-                        state "$initial_state" as CHECK_VISION.(InitialState)
+                        %% Initial state name as "." so that it fits in black circle shape.
+                        %% See https://github.com/StateSmith/StateSmith/issues/404
+                        state "." as CHECK_VISION.(InitialState)
 
                 }
 
-                state "$initial_state" as NON_AGRO.(InitialState)
+                %% Initial state name as "." so that it fits in black circle shape.
+                %% See https://github.com/StateSmith/StateSmith/issues/404
+                state "." as NON_AGRO.(InitialState)
 
                 state NON_AGRO.(ChoicePoint)() <<choice>>
 
@@ -364,7 +368,9 @@ state IDLE {
 
         }
 
-        state "$initial_state" as IDLE.(InitialState)
+        %% Initial state name as "." so that it fits in black circle shape.
+        %% See https://github.com/StateSmith/StateSmith/issues/404
+        state "." as IDLE.(InitialState)
 
         state IDLE.(ChoicePoint)() <<choice>>
 
@@ -400,7 +406,9 @@ state IDLE {
 
 }
 
-state "$initial_state" as ROOT.(InitialState)
+%% Initial state name as "." so that it fits in black circle shape.
+%% See https://github.com/StateSmith/StateSmith/issues/404
+state "." as ROOT.(InitialState)
 
 SOUND_ALARM
 
@@ -430,25 +438,25 @@ HUNT_GRENADE_DIVE : DAMAGED / #123; e.dive.damaged()#59; #125;
 
 HUNT_GRENADE_DIVE : exit / #123; e.dive.exit()#59; #125;
 
-HUNTING --> HUNT_GRENADE_DIVE : NOTICE [noticeEvent.isGrenadeLive() && e.groundObject]
+HUNTING --> HUNT_GRENADE_DIVE : NOTICE [noticeEvent.isGrenadeLive() && \ne.groundObject]
 
 HUNTING --> HUNTING.(ExitPoint)(idle) : do [timer.elapsed()]
 
 HUNTING --> HUNTING.(ExitPoint)(enemy_win) : do [player.isDead()]
 
-HUNT --> CHARGE : do [e.playerDist() < 4 &&\nrand() < 0.02]
+HUNTING.(ExitPoint)(idle) --> IDLE
+
+HUNTING.(ExitPoint)(enemy_win) --> ENEMY_WIN
+
+HUNT --> CHARGE : do [e.playerDist() < 4 && \nrand() < 0.02]
 
 HUNT --> CALL_FOR_BACKUP : do [rand() < 0.001]
 
 HUNTING.(InitialState) --> HUNT
 
-CALL_FOR_BACKUP --> HUNT : do [e.alarm.isDone()]
-
-HUNTING.(ExitPoint)(idle) --> IDLE
-
-HUNTING.(ExitPoint)(enemy_win) --> ENEMY_WIN
-
 CHARGE --> HUNT : do [e.charge.isDone()]
+
+CALL_FOR_BACKUP --> HUNT : do [e.alarm.isDone()]
 
 ENEMY_WIN --> HUNTING : do [timer.elapsed()]
 
@@ -458,7 +466,7 @@ NON_AGRO --> NON_AGRO.(ExitPoint)(surprised) : DAMAGED
 
 SLEEPING --> NOTICE_NOISE : NOTICE
 
-DEEP_SLEEP --> ABOUT_TO_STIR : do [timer.elapsed() ||\ne.playerDist() < 1]
+DEEP_SLEEP --> ABOUT_TO_STIR : do [timer.elapsed() || \ne.playerDist() < 1]
 
 SLEEPING.(InitialState) --> DEEP_SLEEP
 
@@ -470,13 +478,13 @@ CHECK_VISION --> NON_AGRO.(ExitPoint)(surprised) : do [e.canSeePlayer(6)]
 
 CHECK_VISION --> NOTICE_NOISE : NOTICE
 
-DANCE --> FALLING_A_SLEEP : 1. do [timer.elapsed() &&\ne.dance.isDone()]
+DANCE --> FALLING_A_SLEEP : 1. do [timer.elapsed() && \ne.dance.isDone()]
 
 WAKING --> CHECK_VISION.(ChoicePoint)() : 1. do [e.waking.isDone()]
 
 FALLING_A_SLEEP --> SLEEPING : 1. do [e.lulling.isDone()]
 
-CHECK_VISION.(ChoicePoint)() --> DANCE : [e.playerDist() < 3 ||\nrand() < 0.5]
+CHECK_VISION.(ChoicePoint)() --> DANCE : [e.playerDist() < 3 || \nrand() < 0.5]
 
 CHECK_VISION.(ChoicePoint)() --> FALLING_A_SLEEP : else
 
@@ -556,7 +564,7 @@ HUNT_GRENADE_DIVE --> HUNTING : do [e.dive.isDone()]
     </div>
 
 <script>
-// Autogenerated with StateSmith 0.15.1+0972c4996e63923533225bfed0196abcb8a38419.
+// Autogenerated with StateSmith 0.17.1-drawio-1+feb452582d7fe417b3b800a49ee0ceec35d805a9.
 // Algorithm: Balanced2. See https://github.com/StateSmith/StateSmith/wiki/Algorithms
 
 // Generated state machine
@@ -1153,13 +1161,13 @@ evaluateGuard = null;
             // HUNTING.<ExitPoint>(idle) is a pseudo state and cannot have an `enter` trigger.
             
             // HUNTING.<ExitPoint>(idle) behavior
-            // uml: / { this.tracer?.edgeTransition("edge7"); } TransitionTo(IDLE)
+            // uml: / { this.tracer?.edgeTransition("edge3"); } TransitionTo(IDLE)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
                 this.#HUNTING_exit();
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge7");`.
-                this.tracer?.edgeTransition("edge7");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge3");`.
+                this.tracer?.edgeTransition("edge3");
                 
                 // Step 3: Enter/move towards transition target `IDLE`.
                 this.#IDLE_enter();
@@ -1184,13 +1192,13 @@ evaluateGuard = null;
             // HUNTING.<ExitPoint>(enemy_win) is a pseudo state and cannot have an `enter` trigger.
             
             // HUNTING.<ExitPoint>(enemy_win) behavior
-            // uml: / { this.tracer?.edgeTransition("edge8"); } TransitionTo(ENEMY_WIN)
+            // uml: / { this.tracer?.edgeTransition("edge4"); } TransitionTo(ENEMY_WIN)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
                 this.#HUNTING_exit();
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge8");`.
-                this.tracer?.edgeTransition("edge8");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge4");`.
+                this.tracer?.edgeTransition("edge4");
                 
                 // Step 3: Enter/move towards transition target `ENEMY_WIN`.
                 this.#ENEMY_WIN_enter();
@@ -1206,8 +1214,8 @@ evaluateGuard = null;
     #HUNTING_notice()
     {
         // HUNTING behavior
-        // uml: NOTICE [this.tracer?.log("🛡️ User evaluating guard: " + "noticeEvent.isGrenadeLive() && e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [noticeEvent.isGrenadeLive() && e.groundObject] TransitionTo(HUNT_GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge0"); } TransitionTo(HUNT_GRENADE_DIVE)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "noticeEvent.isGrenadeLive() && e.groundObject") || this.evaluateGuard("HUNTING","NOTICE [noticeEvent.isGrenadeLive() && e.groundObject] TransitionTo(HUNT_GRENADE_DIVE)"))
+        // uml: NOTICE [this.tracer?.log("🛡️ User evaluating guard: " + "noticeEvent.isGrenadeLive() && \ne.groundObject") || this.evaluateGuard("HUNTING","NOTICE [noticeEvent.isGrenadeLive() && \ne.groundObject] TransitionTo(HUNT_GRENADE_DIVE)")] / { this.tracer?.edgeTransition("edge0"); } TransitionTo(HUNT_GRENADE_DIVE)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "noticeEvent.isGrenadeLive() && \ne.groundObject") || this.evaluateGuard("HUNTING","NOTICE [noticeEvent.isGrenadeLive() && \ne.groundObject] TransitionTo(HUNT_GRENADE_DIVE)"))
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(Enemy3Sm.StateId.ROOT);
@@ -1228,12 +1236,12 @@ evaluateGuard = null;
     #HUNTING_InitialState_transition()
     {
         // HUNTING.<InitialState> behavior
-        // uml: / { this.tracer?.edgeTransition("edge5"); } TransitionTo(HUNT)
+        // uml: / { this.tracer?.edgeTransition("edge7"); } TransitionTo(HUNT)
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge5");`.
-            this.tracer?.edgeTransition("edge5");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge7");`.
+            this.tracer?.edgeTransition("edge7");
             
             // Step 3: Enter/move towards transition target `HUNT`.
             this.#HUNT_enter();
@@ -1306,14 +1314,14 @@ evaluateGuard = null;
         } // end of behavior for CALL_FOR_BACKUP
         
         // CALL_FOR_BACKUP behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("CALL_FOR_BACKUP","do [e.alarm.isDone()] TransitionTo(HUNT)")] / { this.tracer?.edgeTransition("edge6"); } TransitionTo(HUNT)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("CALL_FOR_BACKUP","do [e.alarm.isDone()] TransitionTo(HUNT)")] / { this.tracer?.edgeTransition("edge9"); } TransitionTo(HUNT)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.alarm.isDone()") || this.evaluateGuard("CALL_FOR_BACKUP","do [e.alarm.isDone()] TransitionTo(HUNT)"))
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#CALL_FOR_BACKUP_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge6");`.
-            this.tracer?.edgeTransition("edge6");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge9");`.
+            this.tracer?.edgeTransition("edge9");
             
             // Step 3: Enter/move towards transition target `HUNT`.
             this.#HUNT_enter();
@@ -1385,14 +1393,14 @@ evaluateGuard = null;
         } // end of behavior for CHARGE
         
         // CHARGE behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.charge.isDone()") || this.evaluateGuard("CHARGE","do [e.charge.isDone()] TransitionTo(HUNT)")] / { this.tracer?.edgeTransition("edge9"); } TransitionTo(HUNT)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.charge.isDone()") || this.evaluateGuard("CHARGE","do [e.charge.isDone()] TransitionTo(HUNT)")] / { this.tracer?.edgeTransition("edge8"); } TransitionTo(HUNT)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "e.charge.isDone()") || this.evaluateGuard("CHARGE","do [e.charge.isDone()] TransitionTo(HUNT)"))
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#CHARGE_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge9");`.
-            this.tracer?.edgeTransition("edge9");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge8");`.
+            this.tracer?.edgeTransition("edge8");
             
             // Step 3: Enter/move towards transition target `HUNT`.
             this.#HUNT_enter();
@@ -1463,14 +1471,14 @@ evaluateGuard = null;
         } // end of behavior for HUNT
         
         // HUNT behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 &&\nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 &&\nrand() < 0.02] TransitionTo(CHARGE)")] / { this.tracer?.edgeTransition("edge3"); } TransitionTo(CHARGE)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 &&\nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 &&\nrand() < 0.02] TransitionTo(CHARGE)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 && \nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 && \nrand() < 0.02] TransitionTo(CHARGE)")] / { this.tracer?.edgeTransition("edge5"); } TransitionTo(CHARGE)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 4 && \nrand() < 0.02") || this.evaluateGuard("HUNT","do [e.playerDist() < 4 && \nrand() < 0.02] TransitionTo(CHARGE)"))
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#HUNT_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge3");`.
-            this.tracer?.edgeTransition("edge3");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge5");`.
+            this.tracer?.edgeTransition("edge5");
             
             // Step 3: Enter/move towards transition target `CHARGE`.
             this.#CHARGE_enter();
@@ -1480,14 +1488,14 @@ evaluateGuard = null;
         } // end of behavior for HUNT
         
         // HUNT behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "rand() < 0.001") || this.evaluateGuard("HUNT","do [rand() < 0.001] TransitionTo(CALL_FOR_BACKUP)")] / { this.tracer?.edgeTransition("edge4"); } TransitionTo(CALL_FOR_BACKUP)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "rand() < 0.001") || this.evaluateGuard("HUNT","do [rand() < 0.001] TransitionTo(CALL_FOR_BACKUP)")] / { this.tracer?.edgeTransition("edge6"); } TransitionTo(CALL_FOR_BACKUP)
         if (this.tracer?.log("🛡️ User evaluating guard: " + "rand() < 0.001") || this.evaluateGuard("HUNT","do [rand() < 0.001] TransitionTo(CALL_FOR_BACKUP)"))
         {
             // Step 1: Exit states until we reach `HUNTING` state (Least Common Ancestor for transition).
             this.#HUNT_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge4");`.
-            this.tracer?.edgeTransition("edge4");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge6");`.
+            this.tracer?.edgeTransition("edge6");
             
             // Step 3: Enter/move towards transition target `CALL_FOR_BACKUP`.
             this.#CALL_FOR_BACKUP_enter();
@@ -2015,8 +2023,8 @@ evaluateGuard = null;
         let consume_event = false;
         
         // DANCE behavior
-        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() &&\ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)")] / { this.tracer?.edgeTransition("edge20"); } TransitionTo(FALLING_A_SLEEP)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() &&\ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() &&\ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)"))
+        // uml: 1. do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() && \ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() && \ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)")] / { this.tracer?.edgeTransition("edge20"); } TransitionTo(FALLING_A_SLEEP)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() && \ne.dance.isDone()") || this.evaluateGuard("DANCE","1. do [timer.elapsed() && \ne.dance.isDone()] TransitionTo(FALLING_A_SLEEP)"))
         {
             // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition).
             this.#DANCE_exit();
@@ -2198,8 +2206,8 @@ evaluateGuard = null;
             // CHECK_VISION.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // CHECK_VISION.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 ||\nrand() < 0.5] TransitionTo(DANCE)")] / { this.tracer?.edgeTransition("edge23"); } TransitionTo(DANCE)
-            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 ||\nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 ||\nrand() < 0.5] TransitionTo(DANCE)"))
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 || \nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 || \nrand() < 0.5] TransitionTo(DANCE)")] / { this.tracer?.edgeTransition("edge23"); } TransitionTo(DANCE)
+            if (this.tracer?.log("🛡️ User evaluating guard: " + "e.playerDist() < 3 || \nrand() < 0.5") || this.evaluateGuard("CHECK_VISION.<ChoicePoint>()","[e.playerDist() < 3 || \nrand() < 0.5] TransitionTo(DANCE)"))
             {
                 // Step 1: Exit states until we reach `CHECK_VISION` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
@@ -2516,12 +2524,6 @@ evaluateGuard = null;
     #ABOUT_TO_STIR_exit()
     {
         // ABOUT_TO_STIR behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for ABOUT_TO_STIR
-        
-        // ABOUT_TO_STIR behavior
         // uml: exit / { this.tracer?.exitState('ABOUT_TO_STIR'); }
         {
             // Step 1: execute action `this.tracer?.exitState('ABOUT_TO_STIR');`
@@ -2608,12 +2610,6 @@ evaluateGuard = null;
     #DEEP_SLEEP_exit()
     {
         // DEEP_SLEEP behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for DEEP_SLEEP
-        
-        // DEEP_SLEEP behavior
         // uml: exit / { this.tracer?.exitState('DEEP_SLEEP'); }
         {
             // Step 1: execute action `this.tracer?.exitState('DEEP_SLEEP');`
@@ -2636,8 +2632,8 @@ evaluateGuard = null;
         } // end of behavior for DEEP_SLEEP
         
         // DEEP_SLEEP behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)")] / { this.tracer?.edgeTransition("edge14"); } TransitionTo(ABOUT_TO_STIR)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() ||\ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() ||\ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() || \ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() || \ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)")] / { this.tracer?.edgeTransition("edge14"); } TransitionTo(ABOUT_TO_STIR)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "timer.elapsed() || \ne.playerDist() < 1") || this.evaluateGuard("DEEP_SLEEP","do [timer.elapsed() || \ne.playerDist() < 1] TransitionTo(ABOUT_TO_STIR)"))
         {
             // Step 1: Exit states until we reach `SLEEPING` state (Least Common Ancestor for transition).
             this.#DEEP_SLEEP_exit();
@@ -2896,10 +2892,11 @@ evaluateGuard = null;
             marker.setAttribute('markerUnits', 'userSpaceOnUse');
         });
 
+        // https://github.com/StateSmith/StateSmith/issues/404
         // https://github.com/StateSmith/StateSmith/issues/294
         // rewrite $initial_state to a black circle
         document.querySelectorAll('g[data-id*="(InitialState)"]').forEach(g=> {
-          g.innerHTML = '<circle transform="translate(0,10)" height="14" width="14" r="7" class="state - start"></circle>';
+          g.innerHTML = '<circle transform="translate(0,3)" height="14" width="14" r="14" class="state - start"></circle>';
         })
 
         var panZoom = window.panZoom = svgPanZoom(document.querySelector('svg'), {

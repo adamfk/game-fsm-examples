@@ -68,12 +68,12 @@ class Enemy2 extends EnemyBlob
 
     updateStallCount() {
         // if we are moving, zero stall count
-        if (abs(this.velocity.x) > 0.001) {
+        if (abs(this.velocity.x) > this.stallVelocityThreshold) {
             this.stallFrameCount = 0;
         } else {
             // we aren't moving.
             // Increase stall count if we tried to
-            if (abs(this.attemptedVelocity.x) > 0.001) {
+            if (abs(this.attemptedVelocity.x) > this.stallVelocityThreshold) {
                 this.stallFrameCount++;
             }
         }

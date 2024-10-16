@@ -285,10 +285,6 @@ class Alarm1 extends EnemyBlobSequence {
 }
 
 class NoticeSeq1 extends EnemyBlobSequence {
-
-    noticeTextOptions = ["huh?", "da heck?", "hmm?"];
-    curiousTextOptions = ["neat!", "I wonder..."];
-
     /**
      * @param {Enemy3} enemyBlob
      * @param {NoticeEvent} noticeEvent
@@ -314,66 +310,71 @@ class NoticeSeq1 extends EnemyBlobSequence {
             this.enemyBlob.facePosition(this.source.pos);
         }, rand(0.2, 0.8));
 
-        let shouldEarlyExit = false;
-        let wanderDuration = 3;
-
+        let noticedLiveGrenade = false;
+        
         if (this.source.isGrenadeLive()) {
-            shouldEarlyExit = rand() > 0.25;
-        } else {
-            wanderDuration = rand(10,15);
+            // 75% chance of noticing a live grenade and early exit this sequence
+            noticedLiveGrenade = rand() < 0.75;
         }
 
-        // if (this.source.isGrenadeExplosion())
-        // {
-        //     wanderDuration = rand(10,15);
-        // }
+        if (!noticedLiveGrenade) {
+            this.maybeInvestigate();
+        }
+    }
 
-        if (!shouldEarlyExit) {
-            // maybe move towards target and study item for x seconds
-            const maxDistance = 20;
-            const distanceToSource = max(maxDistance, this.enemyBlob.pos.distance(this.source.pos));
-            const loudness = (maxDistance - distanceToSource) / maxDistance;
+    maybeInvestigate() {
+        const extraCuriosity = this.noiseSourceProximityToCuriosity();
+        const shouldInvestigate = rand() < 0.75 + extraCuriosity;
 
-            if (rand() < 0.75 + loudness) {
-                {
-                    const action = new ActionHandler();
-                    action.enter = () => {
-                        this.timer.set(wanderDuration);
-                        this.text = "I wonder...";
-                        this.enemyBlob.tile("study");
-                    };
-                    action.isDone = () => {
-                        return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
-                    };
-                    action.do = () => {
-                        this.enemyBlob.facePosition(this.source.pos);
-                        // this.enemyBlob.velocity.x = this.enemyBlob.normalVecToPos(this.source.pos).x * 0.03;
-                        this.enemyBlob.walkOrJumpTowardsTarget(this.enemyBlob.normalVecToPos(this.source.pos));
-                    }
-                    this.add(action);
-                }
+        if (shouldInvestigate) {
+            this.handleInvestigation();
+        } else {
+            // apathetic
+            this.addSimpleAction(() => {
+                this.enemyBlob.tile("groggy");
+                this.text = "meh...";
+            }, rand(1, 3));
+        }
+    }
 
-                this.addSimpleAction(() => {
-                    if (this.source.isGrenade() && this.source.isObjectAlive()) {
-                        this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
-                    }
-                    else {
-                        this.text = "wtf happened here?";
+    handleInvestigation() {
+        let wanderDuration = rand(10,15);
 
-                        this.addSimpleAction(() => {
-                            this.enemyBlob.tile("groggy");
-                            this.text = "weird...";
-                        }, rand(1, 3));
-                    }
-                }, 3);
-            } // should investigate
+        const action = new ActionHandler();
+        action.enter = () => {
+            this.timer.set(wanderDuration);
+            this.text = "I wonder...";
+            this.enemyBlob.tile("study");
+        };
+        action.isDone = () => {
+            return this.timer.elapsed() || this.enemyBlob.pos.distance(this.source.pos) < 0.5;
+        };
+        action.do = () => {
+            this.enemyBlob.facePosition(this.source.pos);
+            this.enemyBlob.leisureMoveTowardsTarget(this.enemyBlob.normalVecToPos(this.source.pos));
+        };
+        this.add(action);
+
+        this.addSimpleAction(() => {
+            if (this.source.isGrenade() && this.source.isObjectAlive()) {
+                this.text = "so shiny..."; // "blinky", "shiny", "so pretty", "what could it be?"
+            }
             else {
+                this.text = "wtf happened here?";
+
                 this.addSimpleAction(() => {
                     this.enemyBlob.tile("groggy");
-                    this.text = "meh...";
+                    this.text = "weird...";
                 }, rand(1, 3));
             }
-        } // should early exit
+        }, 3);
+    }
+
+    noiseSourceProximityToCuriosity() {
+        const maxDistance = 20;
+        const distanceToSource = max(maxDistance, this.enemyBlob.pos.distance(this.source.pos));
+        const extraCuriosityRatio = (maxDistance - distanceToSource) / maxDistance;
+        return extraCuriosityRatio;
     }
 
     do() {

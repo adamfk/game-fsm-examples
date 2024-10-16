@@ -24,8 +24,6 @@ class Enemy1 extends EnemyBlob
      */
     update()
     {
-        super.update();
-
         this.updateStallCount();
 
         // run state machine
@@ -33,16 +31,16 @@ class Enemy1 extends EnemyBlob
         this.debugTextBelowMe(Enemy1Sm.stateIdToString(this.sm.stateId));
 
         this.attemptedVelocity = this.velocity.copy();
+        super.update(); // call parent to update physics
     }
 
     updateStallCount() {
         // if we are moving, zero stall count
-        if (abs(this.velocity.x) > 0.001) {
+        if (abs(this.velocity.x) > this.stallVelocityThreshold) {
             this.stallFrameCount = 0;
         } else {
-            // we aren't moving.
-            // Increase stall count if we tried to
-            if (abs(this.attemptedVelocity.x) > 0.001) {
+            // We aren't moving. Increase stall count if we tried to move.
+            if (abs(this.attemptedVelocity.x) > this.stallVelocityThreshold) {
                 this.stallFrameCount++;
             }
         }
@@ -71,8 +69,10 @@ class Enemy1 extends EnemyBlob
             }
             else
             {
-                // if not jumping, march towards player
-                this.velocity = vecToPlayer.multiply(vec2(.07, .0));
+                // if not jumping, move towards player
+                this.velocity.x += vecToPlayer.x * .01;
+                this.velocity.x = clamp(this.velocity.x, -0.1, 0.1);
+                // this.debugTextAboveMe(this.velocity.x.toFixed(2));
             }
         }
     }

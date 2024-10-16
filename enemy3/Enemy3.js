@@ -1,12 +1,10 @@
 'use strict';
 
-class Enemy3 extends EnemyBlob
-{
+class Enemy3 extends EnemyBlob {
     /**
      * @param {Vector2} pos
      */
-    constructor(pos)
-    { 
+    constructor(pos) {
         super(pos);
         this.stallFrameCount = 0;
 
@@ -69,19 +67,18 @@ class Enemy3 extends EnemyBlob
 
     updateStallCount() {
         // if we are moving, zero stall count
-        if (abs(this.velocity.x) > 0.001) {
+        if (abs(this.velocity.x) > this.stallVelocityThreshold) {
             this.stallFrameCount = 0;
         } else {
             // we aren't moving.
             // Increase stall count if we tried to
-            if (abs(this.attemptedVelocity.x) > 0.001) {
+            if (abs(this.attemptedVelocity.x) > this.stallVelocityThreshold) {
                 this.stallFrameCount++;
             }
         }
     }
 
-    huntPlayer()
-    {
+    huntPlayer() {
         const vecToPlayer = this.normalVecToPlayer();
         this.walkOrJumpTowardsTarget(vecToPlayer);
     }
@@ -91,8 +88,7 @@ class Enemy3 extends EnemyBlob
     }
 
     alertComrades(radius = 30) {
-        engineObjectsCallback(this.pos, radius, (/** @type {this} */ o)=>
-        {
+        engineObjectsCallback(this.pos, radius, (/** @type {this} */ o) => {
             if (o instanceof Enemy3 && o !== this) {
                 // console.log("alerting comrade", this, o);
                 o.alarmEvent();
@@ -110,22 +106,42 @@ class Enemy3 extends EnemyBlob
 
         if (!this.groundObject) {
             this.velocity.x += normalTargetVec.x * .001;
-        }
-
-        else {
+        } else {
             const scaledStallCount = this.stallFrameCount / 60 / 2 * 0.1;
 
             // this.debugTextAboveMe("stall count " + this.stallFrameCount);
             // on ground. randomly jump towards player
             if (rand() < 0.01 + scaledStallCount) {
                 this.jumpTowards(normalTargetVec, scaledStallCount);
-            }
-
-            else {
+            } else {
                 // if not jumping, march towards player
                 this.velocity = normalTargetVec.multiply(vec2(.07, .0));
             }
         }
     }
+
+    /**
+     * @param {Vector2} normalTargetVec
+     */
+    leisureMoveTowardsTarget(normalTargetVec) {
+        if (!normalTargetVec) {
+            return;
+        }
+
+        if (!this.groundObject) {
+            this.velocity.x += normalTargetVec.x * .001;
+        } else {
+            const scaledStallCount = this.stallFrameCount / 60 / 2 * 0.1;
+
+            // only jump if we have been stalled for a while
+            // this.debugTextAboveMe("stall count " + this.stallFrameCount);
+            if (this.stallFrameCount > 15) {
+                this.jumpTowards(normalTargetVec, scaledStallCount);
+            } else {
+                this.velocity = normalTargetVec.multiply(vec2(.07, .0));
+            }
+        }
+    }
+    
 }
 window["Enemy3"] = Enemy3; // register the class so it can be instantiated by name
