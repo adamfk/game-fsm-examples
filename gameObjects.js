@@ -162,8 +162,7 @@ class GameObject extends BasicGameObject
         debugCircle(this.pos, radius, color);
     }
 
-    static debugAreaSize = vec2(30);
-    inDebugArea() { return isOverlapping(this.pos, this.size, cameraPos, Enemy.debugAreaSize); }
+    inDebugArea() { return isOverlapping(this.pos, this.size, cameraPos, vec2(30)); }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
