@@ -1,3 +1,10 @@
+# Tutorial Work In Progress
+This tutorial isn't finished, but does show case some useful enemy AI state machine patterns.
+
+The code quality is "game jam" quality :)
+
+<br>
+
 # Example Game Enemy "AI" State Machines
 Let's explore enemy "AI" and finite state machines (FSMs) in a simple platformer game.
 
@@ -182,6 +189,8 @@ For example, instead of essentially proxying triggers like `enter` to `e.chargeE
 Your diagram could look something like this (a few ideas):
 
 ![](docs/dsl-bigger.png)
+
+If you were always going to "proxy" events to hand written code, you could just draw your states and relationships. The `EDX / proxy()` would be implied.
 
 If you are interested in this, let me know and I can help you get started.
 
